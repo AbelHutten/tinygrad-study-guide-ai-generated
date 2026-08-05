@@ -56,11 +56,11 @@ snapshot?” an explicit comparison.
 | `PYTHON` | Most portable value-producing backend; excellent for semantic reduction and differential checks. | It interprets lowered work and is not a performance proxy. |
 | `CPU` | Exercises real rendering, compilation, allocation, and execution without a GPU. Its generated C is approachable. | The default path needs `clang`; CPU-specific lowering is not GPU behavior. |
 | `CUDA` | NVIDIA path through the CUDA Driver API; the default renderer compiles CUDA source with NVRTC. | A working NVIDIA driver and discoverable CUDA compiler libraries are separate requirements. |
-| `NV` | tinygrad's lower-level NVIDIA/HCQ path, supported on Ampere, Ada, and Blackwell at this snapshot. | It has a different runtime and failure surface from `CUDA`; do not use its direct `PCI` interface casually. |
+| `NVK+NV` | tinygrad's lower-level NVIDIA/HCQ path, explicitly using the ordinary NVIDIA kernel-driver interface; the backend supports Ampere, Ada, and Blackwell at this snapshot. | It has a different runtime and failure surface from `CUDA`; bare `NV` permits interface fallback, so use the explicit route for this course. |
 | `NULL` | Runs compiler and scheduling tests without meaningful device computation. | It cannot establish numerical correctness; copyout is disabled by default. |
 
 The RTX 4090 is Ada (`sm_89`) and is in the supported range for both NVIDIA
-paths. Begin with `CUDA` as the familiar control and add `NV` as a second
+paths. Begin with `CUDA` as the familiar control and add `NVK+NV` as a second
 implementation. Agreement between two backends is useful evidence, not proof:
 they share much of the compiler above the runtime.
 
@@ -169,7 +169,7 @@ nvidia-smi --query-gpu=name,driver_version,compute_cap --format=csv,noheader
 Then run the same semantic smoke test independently on each NVIDIA backend:
 
 ```bash
-for dev in CUDA NV; do
+for dev in CUDA NVK+NV; do
   echo "--- $dev ---"
   CACHEDB="/tmp/tinygrad-guide-$dev.db" DEV="$dev" DEBUG=1 \
     .venv/bin/python - <<'PY'
@@ -190,10 +190,10 @@ Finally, run the same focused test on the accelerator you intend to study:
 ```bash
 DEV=CUDA DEBUG=0 .venv/bin/python -m pytest -q \
   test/test_tiny.py::TestTiny::test_plus
-# Repeat with DEV=NV once the NV smoke test passes.
+# Repeat with DEV=NVK+NV once that smoke test passes.
 ```
 
-The default `CUDA` and `NV` renderers use NVRTC at this snapshot. If the driver
+The default `CUDA` and NV-backend renderers use NVRTC at this snapshot. If the driver
 works but NVRTC is unavailable, this diagnostic chooses tinygrad's PTX
 renderer on the CUDA runtime:
 
@@ -261,7 +261,7 @@ GPU, driver, compute capability:
 DEV=PYTHON smoke/test:
 DEV=CPU smoke/test:
 DEV=CUDA smoke/test:
-DEV=NV smoke/test:
+DEV=NVK+NV smoke/test:
 CACHEDB used:
 first failing layer, if any:
 ```
@@ -286,7 +286,7 @@ You pass the checkpoint when:
 | `CPU` cannot initialize | Confirm `clang` is in `PATH`; retain `PYTHON` as the semantic control. |
 | `nvidia-smi` cannot see the 4090 | Fix driver/device visibility outside tinygrad first. Containers also need the GPU passed through. |
 | `libnvrtc` cannot be loaded | Distinguish CUDA toolkit/compiler-library discovery from driver access; try `CUDA:PTX` only as the diagnostic above. |
-| `CUDA` passes, `NV` fails | Keep the same reproducer and inspect the NV initialization/runtime layer; do not rewrite Tensor/compiler code merely to make the paths agree. |
+| `CUDA` passes, `NVK+NV` fails | Keep the same reproducer and inspect the NV initialization/runtime layer; do not rewrite Tensor/compiler code merely to make the paths agree. |
 | Timings or cache labels change | Use a fresh process and dedicated `/tmp` `CACHEDB`; compare structure and values before performance. |
 | A broad suite fails first | Re-run the exact first failure alone with one backend and no worker concurrency. |
 
@@ -303,7 +303,7 @@ DEV=CPU    DEBUG=0 .venv/bin/python your_reproducer.py
 
 # RTX 4090 paths
 DEV=CUDA DEBUG=0 .venv/bin/python your_reproducer.py
-DEV=NV   DEBUG=0 .venv/bin/python your_reproducer.py
+DEV=NVK+NV DEBUG=0 .venv/bin/python your_reproducer.py
 
 # smallest pytest selection
 DEV=PYTHON DEBUG=0 .venv/bin/python -m pytest -q path/to/test.py::Class::test_name

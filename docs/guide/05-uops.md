@@ -220,12 +220,12 @@ All links are pinned to commit
 
 **Hardware:** Portable. This lab creates IR only.
 
-Run [`labs/phase2/uop_walk.py`](../../labs/phase2/uop_walk.py) from the tinygrad
-study checkout:
+Run `labs/phase2/uop_walk.py` from the tinygrad study checkout, with
+`TINYGRAD_DOCS` pointing at this guide's repository:
 
 ```bash
 export TINYGRAD_DOCS=/absolute/path/to/tinygrad_docs
-CACHEDB=/tmp DEV=PYTHON DEBUG=0 \
+CACHEDB=/tmp/tinygrad-guide-phase2.db DEV=PYTHON DEBUG=0 \
   .venv/bin/python "$TINYGRAD_DOCS/labs/phase2/uop_walk.py"
 ```
 

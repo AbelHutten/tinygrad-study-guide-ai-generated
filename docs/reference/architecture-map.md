@@ -126,9 +126,11 @@ NV backend:   tinygrad HCQ/userspace queue path → direct NVIDIA queue handling
 Both can use CUDA C or PTX-oriented rendering depending on target selection.
 ```
 
-At this snapshot, automatic discovery tries `NV` before `CUDA` when both can
-initialize. Always print `Device.DEFAULT` and set `DEV` explicitly in an
-experiment; “ran on my 4090” is not enough to identify the backend.
+At this snapshot, automatic discovery tries the `NV` backend before `CUDA` when
+both can initialize, and an unqualified NV target permits interface fallback.
+Use `DEV=CUDA` or `DEV=NVK+NV` for course experiments, print the resulting
+target/interface, and never treat “ran on my 4090” as enough to identify the
+path.
 
 The relevant entry points are
 [`NVDevice`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/runtime/ops_nv.py#L585)

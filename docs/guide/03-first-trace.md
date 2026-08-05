@@ -241,11 +241,11 @@ classify calls in a larger trace.
 
 ## Accelerator branch: replay the trace on the 4090
 
-Run Lab B once with `DEV=CUDA` and once with `DEV=NV`. Keep input warm-up and
+Run Lab B once with `DEV=CUDA` and once with `DEV=NVK+NV`. Keep input warm-up and
 counter reset identical:
 
 ```bash
-for dev in CUDA NV; do
+for dev in CUDA NVK+NV; do
   echo "--- $dev ---"
   CACHEDB="/tmp/tinygrad-guide-trace-$dev.db" DEV="$dev" DEBUG=0 \
     .venv/bin/python - <<'PY'

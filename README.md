@@ -31,3 +31,10 @@ Then open the address printed by MkDocs. A production build uses:
 The guide is independent of the tinygrad project. For tinygrad's official API
 and developer documentation, see <https://docs.tinygrad.org/>.
 
+After creating the pinned study checkout in Chapter 2, validate the executable
+portable labs with:
+
+```bash
+python3 scripts/check_docs.py --tinygrad ../tinygrad-study
+python3 scripts/run_labs.py --tinygrad ../tinygrad-study
+```

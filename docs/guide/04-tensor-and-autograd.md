@@ -211,14 +211,13 @@ rg -n 'def dot|def linear|sparse_categorical_crossentropy' tinygrad/mixin
 
 **Hardware:** Portable. The Python backend is sufficient.
 
-The lab is
-[`labs/phase2/frontend_autograd.py`](../../labs/phase2/frontend_autograd.py).
+The lab is `labs/phase2/frontend_autograd.py` in this guide's repository.
 Run it from the tinygrad study checkout at the recorded snapshot. Point
 `TINYGRAD_DOCS` at this guide's repository:
 
 ```bash
 export TINYGRAD_DOCS=/absolute/path/to/tinygrad_docs
-CACHEDB=/tmp DEV=PYTHON DEBUG=0 \
+CACHEDB=/tmp/tinygrad-guide-phase2.db DEV=PYTHON DEBUG=0 \
   .venv/bin/python "$TINYGRAD_DOCS/labs/phase2/frontend_autograd.py"
 ```
 

@@ -9,10 +9,10 @@ Commands assume the tinygrad repository root and an editable installation. Set
 git rev-parse HEAD
 python3 --version
 nvidia-smi --query-gpu=name,driver_version,compute_cap --format=csv,noheader
-DEV=CUDA python3 -c 'from tinygrad import Device; d=Device.DEFAULT; print(d, type(Device[d]).__name__, type(Device[d].renderer).__name__, Device[d].renderer.target)'
+DEV=CUDA .venv/bin/python -c 'from tinygrad import Device; d=Device.DEFAULT; print(d, type(Device[d]).__name__, type(Device[d].renderer).__name__, Device[d].renderer.target)'
 ```
 
-Repeat the last command with `DEV=NV` if investigating tinygrad's lower-level
+Repeat the last command with `DEV=NVK+NV` if investigating tinygrad's lower-level
 NVIDIA backend. An initialization failure is useful evidence; do not hide it by
 falling back to automatic device selection.
 
@@ -25,13 +25,17 @@ falling back to automatic device selection.
 | `DEV=CPU` | Portable compiled execution through the host CPU path. |
 | `DEV=CUDA` | NVIDIA execution through the CUDA Driver API and default renderer selection. |
 | `DEV=CUDA:PTX` | CUDA runtime with the direct PTX renderer. |
-| `DEV=NV` | NVIDIA execution through tinygrad's lower-level HCQ/userspace path. |
+| `DEV=NVK+NV` | NVIDIA execution through tinygrad's HCQ path, requiring the ordinary NVIDIA kernel-driver interface. |
 | `DEV=PYTHON::sm_89` | Python execution using an NVIDIA Ada-oriented target for codegen/tensor-core correctness. |
 
 The general syntax is `interface+device:renderer:architecture`. Empty components
 are allowed, as in the double colon above. Target syntax is snapshot-sensitive;
 confirm it in `Target.parse`, official runtime docs, and CI examples before
 publishing a command.
+
+Bare `DEV=NV` allows interface fallback in this snapshot. Do not use it when a
+course command is meant to guarantee the kernel-driver route. `DEV=PCI+NV` is a
+specialized direct-PCI path for dedicated driver work, not a routine fallback.
 
 ## Debug output
 
@@ -53,9 +57,9 @@ the `DEBUG` guards in the code path under study.
 Examples:
 
 ```bash
-DEV=CPU DEBUG=3 python3 your_reproducer.py
-DEV=CUDA DEBUG=4 python3 your_reproducer.py
-DEV=CUDA DEBUG=2 python3 your_benchmark.py
+DEV=CPU DEBUG=3 .venv/bin/python your_reproducer.py
+DEV=CUDA DEBUG=4 .venv/bin/python your_reproducer.py
+DEV=CUDA DEBUG=2 .venv/bin/python your_benchmark.py
 ```
 
 `DEBUG=2` changes timing behavior by waiting for execution. That is useful for
@@ -64,19 +68,19 @@ diagnosis but is not a substitute for a deliberately synchronized benchmark.
 ## Rewrite and profile visualization
 
 ```bash
-VIZ=1 DEV=CPU DEBUG=0 python3 your_reproducer.py
-python3 -m tinygrad.viz.cli
-python3 -m tinygrad.viz.cli -s TINY | rg Schedule
-python3 -m tinygrad.viz.cli -s TINY 'Schedule 1 Kernel n1' --ls
-DEBUG=6 python3 -m tinygrad.viz.cli -s TINY 'Schedule 1 Kernel n1'
-DEBUG=7 python3 -m tinygrad.viz.cli -s TINY 'Schedule 1 Kernel n1' 'pass name'
+VIZ=1 DEV=CPU DEBUG=0 .venv/bin/python your_reproducer.py
+.venv/bin/python -m tinygrad.viz.cli
+.venv/bin/python -m tinygrad.viz.cli -s TINY | rg Schedule
+.venv/bin/python -m tinygrad.viz.cli -s TINY 'Schedule 1 Kernel n1' --ls
+DEBUG=6 .venv/bin/python -m tinygrad.viz.cli -s TINY 'Schedule 1 Kernel n1'
+DEBUG=7 .venv/bin/python -m tinygrad.viz.cli -s TINY 'Schedule 1 Kernel n1' 'pass name'
 ```
 
 Names contain per-process counters; copy the actual name from the first listing.
 For machine processing:
 
 ```bash
-python3 -m tinygrad.viz.cli --json > /tmp/tinygrad-events.jsonl
+.venv/bin/python -m tinygrad.viz.cli --json > /tmp/tinygrad-events.jsonl
 ```
 
 See the snapshot-pinned
@@ -126,15 +130,15 @@ import. Set shell variables before starting Python.
 Start with the exact regression and its nearest existing file:
 
 ```bash
-DEV=CPU python3 -m pytest test/unit/test_example.py::TestExample::test_case -x -q
-DEV=NULL SPEC=2 python3 -m pytest test/null/test_schedule.py -x -q
-DEV=CUDA python3 -m pytest test/backend/test_ops.py -x -q
+DEV=CPU .venv/bin/python -m pytest test/unit/test_example.py::TestExample::test_case -x -q
+DEV=NULL SPEC=2 .venv/bin/python -m pytest test/null/test_schedule.py -x -q
+DEV=CUDA .venv/bin/python -m pytest test/backend/test_ops.py -x -q
 ```
 
 If `pytest-xdist` is installed, upstream asks agents to use twelve workers:
 
 ```bash
-DEV=CPU python3 -m pytest test/unit/ -x -q -n12
+DEV=CPU .venv/bin/python -m pytest test/unit/ -x -q -n12
 ```
 
 Broaden only after the focused test fails before the fix and passes after it.
@@ -144,8 +148,8 @@ assuming the full suite runs on one backend.
 ## Static checks
 
 ```bash
-python3 -m ruff check .
-python3 -m mypy tinygrad/
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy tinygrad/
 pre-commit run --all-files
 ```
 

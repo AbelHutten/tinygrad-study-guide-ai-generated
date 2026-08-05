@@ -313,11 +313,11 @@ rule list alone may not reveal its actual priority.
 
 **Hardware:** Portable. Only one semantic check uses the Python backend.
 
-Run [`labs/phase2/rewrite_lab.py`](../../labs/phase2/rewrite_lab.py):
+Run `labs/phase2/rewrite_lab.py` from this guide's repository:
 
 ```bash
 export TINYGRAD_DOCS=/absolute/path/to/tinygrad_docs
-CACHEDB=/tmp DEV=PYTHON DEBUG=0 \
+CACHEDB=/tmp/tinygrad-guide-phase2.db DEV=PYTHON DEBUG=0 \
   .venv/bin/python "$TINYGRAD_DOCS/labs/phase2/rewrite_lab.py"
 ```
 
@@ -347,7 +347,7 @@ The lab names the pass `lab integer add zero`. Capture rewrite data without
 letting an interactive terminal replace the process with the server:
 
 ```bash
-VIZ=1 CACHEDB=/tmp DEV=PYTHON DEBUG=0 \
+VIZ=1 CACHEDB=/tmp/tinygrad-guide-phase2-viz.db DEV=PYTHON DEBUG=0 \
   .venv/bin/python "$TINYGRAD_DOCS/labs/phase2/rewrite_lab.py" \
   TestIntegerAddZero.test_positive_both_orders | tee /tmp/phase2-viz.log
 
@@ -369,7 +369,7 @@ semantic correctness. Pair it with the test matrix.
 Run the focused matcher/driver suites at the snapshot:
 
 ```bash
-CACHEDB=/tmp DEV=PYTHON DEBUG=0 .venv/bin/python -m pytest -q \
+CACHEDB=/tmp/tinygrad-guide-phase2.db DEV=PYTHON DEBUG=0 .venv/bin/python -m pytest -q \
   test/null/test_pattern_matcher.py test/null/test_graph_rewrite.py
 ```
 
