@@ -22,6 +22,7 @@ PINNED_TINYGRAD_RE = re.compile(
 MOVING_SOURCE_RE = re.compile(
   r"https://github\.com/tinygrad/tinygrad/(?:blob|tree)/(?:master|main)(?:[/)#?]|$)"
 )
+LIVE_SOURCE_MARKER = "<!-- live-upstream -->"
 
 
 def load_snapshot() -> dict:
@@ -43,10 +44,11 @@ def check_markdown(snapshot: dict) -> list[str]:
     for match in PINNED_TINYGRAD_RE.finditer(text):
       if match.group(1) != expected_commit:
         errors.append(f"{relative_name}: tinygrad link pins {match.group(1)}, expected {expected_commit}")
-    if MOVING_SOURCE_RE.search(text):
-      errors.append(f"{relative_name}: source link uses moving master/main instead of the recorded commit")
-
     for line_number, line in enumerate(text.splitlines(), 1):
+      if MOVING_SOURCE_RE.search(line) and LIVE_SOURCE_MARKER not in line:
+        errors.append(
+          f"{relative_name}:{line_number}: source link uses moving master/main without {LIVE_SOURCE_MARKER}"
+        )
       for match in LINK_RE.finditer(line):
         raw_target = match.group(1).strip()
         # Drop an optional Markdown title after a whitespace separator.

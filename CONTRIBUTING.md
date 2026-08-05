@@ -41,6 +41,15 @@ verified on the backend they name. Performance results must record the device,
 backend, renderer, commit, warm-up, synchronization, sample distribution, and
 correctness oracle.
 
+The bundled lab runner exercises all portable probes plus NVIDIA-targeted
+lowering in the Python executor. Add real backends explicitly:
+
+```bash
+python3 scripts/run_labs.py --tinygrad ../tinygrad-study
+python3 scripts/run_labs.py --tinygrad ../tinygrad-study \
+  --python ../tinygrad-study/.venv/bin/python --device CPU --device CUDA
+```
+
 ## Update the tinygrad snapshot
 
 Do not merely replace the commit hash. To advance the snapshot:
@@ -54,7 +63,9 @@ Do not merely replace the commit hash. To advance the snapshot:
 7. record migration notes where a returning reader could otherwise be misled.
 
 The checker rejects mixed snapshot hashes and source links to moving
-`master`/`main` branches.
+`master`/`main` branches. Deliberate live-policy links must carry the invisible
+`<!-- live-upstream -->` marker on the same line so their instability is
+reviewable rather than accidental.
 
 ## Keep changes reviewable
 

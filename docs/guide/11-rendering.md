@@ -177,9 +177,21 @@ correctness. One isolated timing is not a renderer result.
 
 Use the [PTX ISA](https://docs.nvidia.com/cuda/parallel-thread-execution/) to
 annotate parameters, global loads, arithmetic, and stores in one generated PTX
-kernel. If CUDA binary tools are installed, use `nvdisasm`/`cuobjdump` as a
-second view and state clearly that SASS is the native code while PTX is a
-virtual ISA.
+kernel. Raw PTX is not input to `nvdisasm`. With compatible `ptxas` and
+`nvdisasm` tools in `PATH`, `DEBUG=7` asks the snapshot compiler's `disassemble`
+method to assemble a PTX `BINARY` temporarily and print SASS. For a manual
+artifact, save the finalized PTX bytes from the program's `BINARY` child—not
+the pre-compilation `SOURCE` with target placeholders—then run:
+
+```bash
+ptxas -arch=sm_89 kernel.ptx -o kernel.cubin
+nvdisasm kernel.cubin
+# cuobjdump also needs an appropriate cubin, fatbin, or host binary.
+```
+
+State clearly that SASS is native code while PTX is a virtual ISA, and record
+the assembler/toolchain version because native output is not fixed by the PTX
+text alone.
 
 ## Contribution-shaped exercise
 

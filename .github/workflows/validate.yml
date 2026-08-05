@@ -1,0 +1,31 @@
+name: Validate guide
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  docs-and-labs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install documentation dependencies
+        run: python -m pip install -r requirements-docs.txt
+      - name: Check out the recorded tinygrad snapshot
+        run: |
+          git clone --filter=blob:none https://github.com/tinygrad/tinygrad.git "${{ runner.temp }}/tinygrad-study"
+          git -C "${{ runner.temp }}/tinygrad-study" switch --detach 874d33128b4e4785beea736d97df6716e0321717
+      - name: Validate source links and symbols
+        run: python scripts/check_docs.py --tinygrad "${{ runner.temp }}/tinygrad-study"
+      - name: Run portable and CPU labs
+        run: python scripts/run_labs.py --tinygrad "${{ runner.temp }}/tinygrad-study" --device CPU
+      - name: Build documentation strictly
+        run: mkdocs build --strict

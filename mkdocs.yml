@@ -35,7 +35,35 @@ nav:
       - Home: index.md
       - How to use this guide: guide/how-to-use.md
       - Curriculum map: guide/curriculum.md
+  - "Phase 1 — Establish a feedback loop":
+      - "1. Orientation and vocabulary": guide/01-orientation.md
+      - "2. Development setup": guide/02-setup.md
+      - "3. Trace one expression": guide/03-first-trace.md
+  - "Phase 2 — Learn the graph language":
+      - "4. Tensor frontend and autograd": guide/04-tensor-and-autograd.md
+      - "5. UOp graphs": guide/05-uops.md
+      - "6. Pattern matching and rewriting": guide/06-rewrites.md
+  - "Phase 3 — Turn intent into kernels":
+      - "7. Scheduling and realization": guide/07-scheduling.md
+      - "8. Shapes, views, and indexing": guide/08-shapes-and-indexing.md
+      - "9. Kernel optimization": guide/09-kernel-optimization.md
+      - "10. Lowering a kernel": guide/10-lowering.md
+      - "11. Rendering and compilation": guide/11-rendering.md
+  - "Phase 4 — Cross the machine boundary":
+      - "12. Devices and runtimes": guide/12-runtime.md
+      - "13. TinyJit and graph replay": guide/13-jit.md
+      - "14. NVIDIA on Ubuntu": guide/14-nvidia.md
+  - "Phase 5 — Work like a contributor":
+      - "15. Debugging across the pipeline": guide/15-debugging.md
+      - "16. Testing a contribution": guide/16-testing.md
+      - "17. Performance engineering": guide/17-performance.md
+      - "18. From idea or bounty to PR": guide/18-contributing.md
   - Reference:
+      - Architecture map: reference/architecture-map.md
+      - Command quick reference: reference/commands.md
+      - Glossary: reference/glossary.md
+      - Learning resources: reference/learning-resources.md
+      - Contribution brief: reference/contribution-brief.md
       - Source snapshot: reference/source-snapshot.md
 
 markdown_extensions:
