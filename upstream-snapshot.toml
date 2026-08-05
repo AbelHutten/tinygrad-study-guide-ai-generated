@@ -1,0 +1,104 @@
+repository = "https://github.com/tinygrad/tinygrad.git"
+commit = "874d33128b4e4785beea736d97df6716e0321717"
+commit_date = "2026-08-05"
+package_version = "0.13.0"
+
+[[symbols]]
+label = "operation vocabulary"
+path = "tinygrad/uop/__init__.py"
+pattern = '^class Ops\(FastEnum\):'
+
+[[symbols]]
+label = "UOp node"
+path = "tinygrad/uop/ops.py"
+pattern = '^class UOp\('
+
+[[symbols]]
+label = "UOp pattern"
+path = "tinygrad/uop/ops.py"
+pattern = '^class UPat\('
+
+[[symbols]]
+label = "pattern matcher"
+path = "tinygrad/uop/ops.py"
+pattern = '^class PatternMatcher:'
+
+[[symbols]]
+label = "graph rewrite entry point"
+path = "tinygrad/uop/ops.py"
+pattern = '^def graph_rewrite\('
+
+[[symbols]]
+label = "Tensor frontend"
+path = "tinygrad/tensor.py"
+pattern = '^class Tensor\('
+
+[[symbols]]
+label = "Tensor schedule entry point"
+path = "tinygrad/tensor.py"
+pattern = '^  def linear_with_vars\('
+
+[[symbols]]
+label = "callification"
+path = "tinygrad/callify.py"
+pattern = '^def transform_to_call\('
+
+[[symbols]]
+label = "rangeification"
+path = "tinygrad/schedule/indexing.py"
+pattern = '^def run_rangeify\('
+
+[[symbols]]
+label = "kernel graph"
+path = "tinygrad/schedule/rangeify.py"
+pattern = '^def get_kernel_graph\('
+
+[[symbols]]
+label = "dependency scheduler"
+path = "tinygrad/schedule/__init__.py"
+pattern = '^def create_schedule\('
+
+[[symbols]]
+label = "linear schedule construction"
+path = "tinygrad/schedule/__init__.py"
+pattern = '^def create_linear_with_vars\('
+
+[[symbols]]
+label = "kernel lowering pipeline"
+path = "tinygrad/codegen/__init__.py"
+pattern = '^def full_rewrite_to_sink\('
+
+[[symbols]]
+label = "program construction"
+path = "tinygrad/codegen/__init__.py"
+pattern = '^def to_program\('
+
+[[symbols]]
+label = "execution loop"
+path = "tinygrad/engine/realize.py"
+pattern = '^def run_linear\('
+
+[[symbols]]
+label = "renderer contract"
+path = "tinygrad/renderer/__init__.py"
+pattern = '^class Renderer:'
+
+[[symbols]]
+label = "compiled device contract"
+path = "tinygrad/device.py"
+pattern = '^class Compiled:'
+
+[[symbols]]
+label = "JIT state machine"
+path = "tinygrad/engine/jit.py"
+pattern = '^class _TinyJit\('
+
+[[symbols]]
+label = "CUDA backend"
+path = "tinygrad/runtime/ops_cuda.py"
+pattern = '^class CUDADevice\('
+
+[[symbols]]
+label = "NV backend"
+path = "tinygrad/runtime/ops_nv.py"
+pattern = '^class NVDevice\('
