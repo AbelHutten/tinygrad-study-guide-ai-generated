@@ -1,5 +1,8 @@
 site_name: An Independent Study Guide to tinygrad
 site_description: An independent, unofficial path from Python and ML experience to contributing to tinygrad
+site_url: https://abelhutten.github.io/tinygrad-study-guide-ai-generated/
+repo_url: https://github.com/AbelHutten/tinygrad-study-guide-ai-generated
+repo_name: AbelHutten/tinygrad-study-guide-ai-generated
 
 theme:
   name: material
