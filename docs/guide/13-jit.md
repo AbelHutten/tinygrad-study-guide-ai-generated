@@ -11,7 +11,7 @@ device graph as well.
 This chapter separates four mechanisms: kernel/program caching, TinyJit capture,
 device-graph batching, and the experimental HCQ2 linking path.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

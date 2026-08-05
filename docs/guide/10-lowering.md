@@ -10,7 +10,7 @@ GPU dimensions, barriers, and control flow.
 This chapter gives you a pass-by-pass map and a debugging method. It does not
 ask you to memorize every rewrite in `codegen/`.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

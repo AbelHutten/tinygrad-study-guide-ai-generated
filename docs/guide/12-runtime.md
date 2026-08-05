@@ -10,7 +10,7 @@ This chapter teaches the common runtime contracts. A backend contribution then
 becomes “implement or debug this contract for one device,” rather than “read a
 large `ops_*.py` file and hope the architecture emerges.”
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

@@ -11,7 +11,7 @@ This chapter teaches you to locate the right optimization layer, read and apply
 tinygrad's kernel options, reason about their hardware costs, and produce
 performance evidence that is credible on an RTX 4090.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

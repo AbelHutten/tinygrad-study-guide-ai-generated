@@ -15,7 +15,7 @@ minimization method that preserves the failure, and a controlled
 predict-observe-change-regress exercise. It applies to wrong values, exceptions,
 illegal graphs, compilation failures, crashes, and JIT-only failures.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

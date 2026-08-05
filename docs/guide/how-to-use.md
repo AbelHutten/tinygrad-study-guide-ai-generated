@@ -72,10 +72,11 @@ The path uses these labels:
 
 - **Portable** — should work with the Python, NULL, or CPU backend.
 - **Accelerator** — needs a supported GPU but is not vendor-specific.
-- **NVIDIA** — tested against Ubuntu plus an RTX 4090; backend details may not
-  apply elsewhere.
+- **NVIDIA** — written for Ubuntu plus an RTX 4090. The bundled runner's selected
+  `CUDA` and `NVK+NV` probes passed once on that setup; chapter exercises outside
+  the runner may not have been executed, and backend details may not apply
+  elsewhere.
 
 Never begin an investigation on hardware if a smaller Python/CPU reproducer can
 answer the same semantic question. Move to the GPU when launch behavior,
 generated device code, memory hierarchy, or performance is the subject.
-

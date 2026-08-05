@@ -11,7 +11,7 @@ The main learning and performance lane is `DEV=CUDA`. The `NV` backend is an
 advanced runtime/driver subject, not a prerequisite for understanding tinygrad's
 compiler.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Hardware identity
 

@@ -14,7 +14,7 @@ This chapter teaches how to route a test into tinygrad's suite, choose semantic
 and structural assertions, use differential/property/fuzz testing, turn on IR
 and bounds validation, and escalate in proportion to the change.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

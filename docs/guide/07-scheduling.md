@@ -14,7 +14,7 @@ This chapter teaches you to answer two contribution questions:
 
 Those questions come before tuning the code inside any one kernel.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

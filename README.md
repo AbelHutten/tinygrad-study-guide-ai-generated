@@ -1,5 +1,29 @@
 # tinygrad Contributor Guide
 
+> [!IMPORTANT]
+> **Independent, unofficial, AI-generated material**
+>
+> This repository is an independently published learning resource about
+> tinygrad. It is not part of the tinygrad project and is not affiliated with,
+> maintained by, sponsored by, approved by, or endorsed by the tinygrad
+> project, tiny corp, or tinygrad's maintainers. For authoritative information,
+> use [tinygrad's official repository](https://github.com/tinygrad/tinygrad) and
+> [official documentation](https://docs.tinygrad.org/). Questions and
+> corrections about this guide belong in this repository, not in tinygrad's
+> issue tracker or support channels.
+>
+> The guide and its supporting files were generated end-to-end by OpenAI Codex
+> using GPT-5.6 Sol Ultra, from prompts and scope decisions supplied by the
+> repository owner. The owner did not manually author, edit, or technically
+> review the generated material. The owner did manually run the bundled lab
+> runner on Ubuntu with an RTX 4090, selecting both `CUDA` and `NVK+NV`; all
+> selections in that run passed. This was a limited smoke test, not verification
+> of every explanation, command, exercise, device, or tinygrad revision. See
+> [Provenance and validation](docs/reference/provenance.md) for the exact scope.
+>
+> This generated artifact is published so others can use it without spending
+> the time and tokens required to generate a similar guide.
+
 An unofficial, contribution-oriented path through tinygrad for readers who are
 already comfortable with Python and machine learning, but are new to compilers
 and GPU programming.

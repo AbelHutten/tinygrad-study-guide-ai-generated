@@ -1,6 +1,6 @@
 # Source snapshot
 
-Exact source references in this guide were researched against:
+Source-specific material in this generated guide targets:
 
 | Field | Value |
 | --- | --- |
@@ -49,4 +49,3 @@ and source links have been checked against the new commit. If a symbol moved but
 the model stayed valid, update the link. If behavior or pass ordering changed,
 update the explanation and add a short migration note where an existing reader
 would otherwise be misled.
-

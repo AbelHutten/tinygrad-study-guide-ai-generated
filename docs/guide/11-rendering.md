@@ -10,7 +10,7 @@ allocation, rendering, vendor compilation, binary loading, and launch.
 That separation tells you whether a failure belongs in codegen, a renderer, a
 compiler wrapper, or a runtime.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

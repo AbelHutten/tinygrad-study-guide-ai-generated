@@ -15,7 +15,7 @@ on [Chapter 9](09-kernel-optimization.md); this chapter is about deciding
 whether a kernel is actually the right thing to optimize and proving that the
 result matters.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 

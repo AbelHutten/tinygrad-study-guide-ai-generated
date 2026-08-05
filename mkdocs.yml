@@ -33,6 +33,7 @@ theme:
 nav:
   - Start here:
       - Home: index.md
+      - Provenance and validation: reference/provenance.md
       - How to use this guide: guide/how-to-use.md
       - Curriculum map: guide/curriculum.md
   - "Phase 1 — Establish a feedback loop":

@@ -13,7 +13,7 @@ indexing work. It prepares you to contribute to movement operations, symbolic
 simplification, validity handling, rangeification, and the indexing side of
 codegen.
 
-**Verified against tinygrad:** `874d331` (2026-08-05).
+**Source snapshot:** `874d331` (2026-08-05).
 
 ## Prerequisite gate
 
