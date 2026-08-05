@@ -1,0 +1,60 @@
+site_name: tinygrad Contributor Guide
+site_description: A front-to-back path from Python and ML experience to contributing to tinygrad
+repo_url: https://github.com/tinygrad/tinygrad
+repo_name: tinygrad/tinygrad
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/brightness-7
+        name: Use dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/brightness-4
+        name: Use light mode
+
+nav:
+  - Start here:
+      - Home: index.md
+      - How to use this guide: guide/how-to-use.md
+      - Curriculum map: guide/curriculum.md
+  - Reference:
+      - Source snapshot: reference/source-snapshot.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+strict: true
