@@ -1,7 +1,5 @@
-site_name: tinygrad Contributor Guide
-site_description: A front-to-back path from Python and ML experience to contributing to tinygrad
-repo_url: https://github.com/tinygrad/tinygrad
-repo_name: tinygrad/tinygrad
+site_name: An Independent Study Guide to tinygrad
+site_description: An independent, unofficial path from Python and ML experience to contributing to tinygrad
 
 theme:
   name: material

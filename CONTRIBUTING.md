@@ -1,8 +1,10 @@
 # Contributing to this guide
 
-This repository is an independent learning resource, not tinygrad's upstream
-documentation tree. Changes should improve a reader's ability to investigate
-and validate tinygrad itself.
+This repository is independent of the tinygrad project. It is not maintained,
+sponsored, approved, or endorsed by tiny corp or tinygrad's maintainers.
+Contributions, questions, and support requests for this guide belong in this
+repository, not in tinygrad's upstream issue tracker. Changes should improve a
+reader's ability to investigate and validate tinygrad itself.
 
 ## Content standard
 

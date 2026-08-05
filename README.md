@@ -1,4 +1,4 @@
-# tinygrad Contributor Guide
+# An Independent Study Guide to tinygrad
 
 > [!IMPORTANT]
 > **Independent, unofficial, AI-generated material**
