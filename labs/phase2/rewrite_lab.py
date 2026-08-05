@@ -75,6 +75,8 @@ class TestDriverBehavior(unittest.TestCase):
     self.assertIs(graph_rewrite(x + 0, matcher), x)
 
   def test_cycle_is_rejected_but_walk_applies_once(self):
+    # Adapted from tinygrad's MIT-licensed rewrite-cycle test; see
+    # ../../THIRD_PARTY_NOTICES.md for the pinned source and attribution.
     bouncing = PatternMatcher([
       (UPat(Ops.CONST, arg=3, name="x"), lambda x: UOp.const(4, x.dtype)),
       (UPat(Ops.CONST, arg=4, name="x"), lambda x: UOp.const(3, x.dtype)),

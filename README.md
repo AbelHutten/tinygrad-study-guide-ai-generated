@@ -62,3 +62,10 @@ portable labs with:
 python3 scripts/check_docs.py --tinygrad ../tinygrad-study
 python3 scripts/run_labs.py --tinygrad ../tinygrad-study
 ```
+
+## License
+
+This repository's documentation and code are released under the permissive
+[MIT License](LICENSE). Third-party projects and linked materials retain their
+own terms; the one adapted tinygrad test fragment is identified in
+[Third-party notices](THIRD_PARTY_NOTICES.md).

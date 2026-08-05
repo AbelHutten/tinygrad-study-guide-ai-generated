@@ -31,7 +31,12 @@ def load_snapshot() -> dict:
 
 
 def markdown_files() -> list[Path]:
-  return sorted([ROOT / "README.md", ROOT / "CONTRIBUTING.md", *DOCS.rglob("*.md")])
+  return sorted([
+    ROOT / "README.md",
+    ROOT / "CONTRIBUTING.md",
+    ROOT / "THIRD_PARTY_NOTICES.md",
+    *DOCS.rglob("*.md"),
+  ])
 
 
 def check_markdown(snapshot: dict) -> list[str]:
