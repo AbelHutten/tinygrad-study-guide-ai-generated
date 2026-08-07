@@ -30,6 +30,23 @@ This repository is published as a reusable generated artifact. Access to a
 comparable model and workflow could produce a similar artifact; publishing this
 version may save readers the time and tokens required to regenerate one.
 
+## Post-publication reader review
+
+On 2026-08-07, the repository owner began reading the published guide and
+reported that Chapter 1 assumed too much compiler and GPU background, was too
+sparse, and assigned upstream source ranges that were not meaningful in
+isolation. In response, the model rewrote that chapter from first principles,
+narrowed and annotated its source tour, added paper and runnable exercises, and
+made related terminology corrections in the glossary and later chapters.
+
+The owner supplied the reader feedback and requested the revision but did not
+manually author or edit the replacement text. The model checked the revised
+examples and source ranges against the pinned tinygrad checkout, and built the
+site in strict mode. This reader-directed revision means the repository should
+no longer be described as having received no owner review at all. It does not
+establish comprehensive technical review of Chapter 1, any untouched chapter,
+or the guide as a whole.
+
 ## Manual hardware run
 
 On 2026-08-05, the repository owner manually ran the bundled lab runner on a

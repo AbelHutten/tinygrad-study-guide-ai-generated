@@ -11,14 +11,16 @@
     corrections about this guide belong in this repository, not in tinygrad's
     issue tracker or support channels.
 
-    The guide and its supporting files were generated end-to-end by OpenAI
-    Codex using GPT-5.6 Sol Ultra, from prompts and scope decisions supplied by
-    the repository owner. The owner did not manually author, edit, or
-    technically review the generated material. The owner did manually run the
-    bundled lab runner on Ubuntu with an RTX 4090, selecting both `CUDA` and
-    `NVK+NV`; all selections in that run passed. This was a limited smoke test,
-    not verification of every explanation, command, exercise, device, or
-    tinygrad revision. See
+    The initial guide and its supporting files were generated end-to-end by
+    OpenAI Codex using GPT-5.6 Sol Ultra, from prompts and scope decisions
+    supplied by the repository owner. Before initial publication, the owner did
+    not manually author, edit, or technically review the generated material.
+    The owner is now reading the guide and directing model-written revisions;
+    this does not imply comprehensive technical review of the guide. The owner
+    also manually ran the bundled lab runner on Ubuntu with an RTX 4090,
+    selecting both `CUDA` and `NVK+NV`; all selections in that run passed. This
+    was a limited smoke test, not verification of every explanation, command,
+    exercise, device, or tinygrad revision. See
     [Provenance and validation](reference/provenance.md) for the exact scope.
 
 This is a contribution-readiness course for tinygrad. It starts where many
