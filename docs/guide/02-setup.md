@@ -599,6 +599,14 @@ lab command remains non-failing on a recognized unavailable host unless
 `--require-available` is supplied.  Chapter 14 explains the route-specific
 evidence and the NV initialization commands which can precede renderer
 preflight.
+The Phase 5 debugging walk always runs its independent control on the exact
+`PYTHON` route.  If `--device CPU` or `--device CPU:CLANG` was supplied, it
+also runs the expected-defect and fixed-regression modes in fresh processes,
+both with the exact `CPU:CLANG` spelling.  Those modes reuse one already
+lowered program and prove that `SOURCE` is the first differing artifact after
+an identical `LINEAR`; they do not edit tinygrad or turn arbitrary failures
+into passing results.  Added accelerator devices do not cause this deliberately
+CPU-renderer-specific experiment to be replayed on a GPU.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 

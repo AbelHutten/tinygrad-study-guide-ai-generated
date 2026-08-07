@@ -94,6 +94,16 @@ def main() -> int:
     run_lab(python, checkout, render_lab, "PYTHON", cache_dir, lab_args=("--mock-ptx",))
     run_lab(python, checkout, render_lab, "PYTHON", cache_dir, lab_args=("--optional-mock-cuda",))
 
+    debugging_lab = ROOT / "labs/phase5/debugging_walk.py"
+    run_lab(python, checkout, debugging_lab, "PYTHON", cache_dir, jit=0, lab_args=("--mode", "control"))
+    if any(device in ("CPU", "CPU:CLANG") for device in args.device):
+      # These two modes deliberately require the explicit CPU:CLANG spelling;
+      # a generic CPU route is not accepted as evidence for the renderer fault.
+      run_lab(python, checkout, debugging_lab, "CPU:CLANG", cache_dir, jit=0,
+              lab_args=("--mode", "injected"))
+      run_lab(python, checkout, debugging_lab, "CPU:CLANG", cache_dir, jit=0,
+              lab_args=("--mode", "fixed"))
+
     for device in args.device:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
       if device == "CPU" or device.startswith("CPU:CLANG"):
