@@ -556,8 +556,13 @@ python3 scripts/run_labs.py \
 The runner executes a controlled selection of guide labs with fresh temporary
 cache paths. The Phase 1 trace, Phase 2 frontend/UOp/rewrite labs, and Phase 3
 scheduling and shape/indexing labs always run on `PYTHON`. Runtime-oriented
-labs run on `PYTHON`, on a compiler-only `PYTHON::sm_89` route where applicable,
-and again on every added `--device`.
+labs run on `PYTHON`, on a hardware-free, Python-executed CUDA-targeted
+`PYTHON::sm_89` structural route where applicable, and again on every added
+`--device`.
+The Phase 3 kernel-optimization lab runs its core, strict-padding, and
+padding-enabled modes only on `PYTHON::sm_89`. They check pinned Ada-targeted
+options, `WMMA` structure, and complete small results with the Python executor,
+never on an added hardware backend, and make no physical-GPU or timing claim.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 

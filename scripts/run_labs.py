@@ -26,7 +26,8 @@ RUNTIME_LABS = (
 )
 
 
-def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Path, jit: int = 1) -> None:
+def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Path, jit: int = 1,
+            lab_args: tuple[str, ...] = ()) -> None:
   env = os.environ.copy()
   old_pythonpath = env.get("PYTHONPATH")
   env.update({
@@ -37,8 +38,9 @@ def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Pat
     "CACHEDB": str(cache_dir / f"{lab.stem}-{device.replace(':', '_')}-jit{jit}.db"),
     "PYTHONPATH": str(checkout) + (os.pathsep + old_pythonpath if old_pythonpath else ""),
   })
-  command = [str(python), str(lab)]
-  print(f"\n==> DEV={device} JIT={jit} {lab.relative_to(ROOT)}", flush=True)
+  command = [str(python), str(lab), *lab_args]
+  suffix = " " + " ".join(lab_args) if lab_args else ""
+  print(f"\n==> DEV={device} JIT={jit} {lab.relative_to(ROOT)}{suffix}", flush=True)
   subprocess.run(command, cwd=checkout, env=env, check=True)
 
 
@@ -66,6 +68,12 @@ def main() -> int:
     # This route exercises NVIDIA-targeted lowering without claiming to test a
     # physical GPU, driver, concurrent execution, launch behavior, or performance.
     run_lab(python, checkout, ROOT / "labs/phase3/inspect_program.py", "PYTHON::sm_89", cache_dir)
+    kernel_lab = ROOT / "labs/phase3/kernel_optimization.py"
+    run_lab(python, checkout, kernel_lab, "PYTHON::sm_89", cache_dir, lab_args=("--mode", "core"))
+    # These must be separate processes: the pinned in-process program cache does
+    # not include TC_OPT in its key.
+    run_lab(python, checkout, kernel_lab, "PYTHON::sm_89", cache_dir, lab_args=("--mode", "padding-strict"))
+    run_lab(python, checkout, kernel_lab, "PYTHON::sm_89", cache_dir, lab_args=("--mode", "padding-enabled"))
 
     for device in args.device:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
