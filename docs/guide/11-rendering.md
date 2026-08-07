@@ -302,6 +302,13 @@ name/roles: r_2_3 (0, 1) (0,) (1,)
 launch global/local: (2, 1, 1) (1, 1, 1)   # Python and PTX
 ```
 
+`r_2_3` is the name observed in a clean local process. Kernel names are debug
+labels, not semantic identities: tinygrad's process-local collision counter can
+append a suffix if the same generated base name was already used. The lab
+therefore checks that the name is a valid nonempty function identifier and
+uses the observed `program.arg.function_name` in source witnesses; it does not
+require the literal spelling `r_2_3`.
+
 The tuples after the name are:
 
 - `globals=(0,1)`: buffer parameter slots referenced by the kernel;

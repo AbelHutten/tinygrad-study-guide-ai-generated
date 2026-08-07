@@ -7,6 +7,7 @@ import base64
 from collections import Counter
 import os
 import pickle
+import re
 
 
 # Lock the code-generation settings on which the structural assertions depend.
@@ -67,7 +68,8 @@ def program_parts(program: UOp) -> tuple[UOp, UOp, str, bytes]:
   assert tuple(node.op for node in program.src) == EXPECTED_CHILDREN
   sink, linear, source_node, binary_node = program.src
   assert isinstance(source_node.arg, str) and isinstance(binary_node.arg, bytes)
-  assert program.arg.name == "r_2_3"
+  assert isinstance(program.arg.name, str) and program.arg.name
+  assert re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", program.arg.function_name)
   assert program.arg.vars == ()
   assert program.arg.globals == (0, 1)
   assert program.arg.outs == (0,) and program.arg.ins == (1,)
@@ -146,7 +148,7 @@ def live_mode() -> None:
     print("SOURCE decodes to BINARY:", True)
   else:
     witnesses = (
-      "void r_2_3(",
+      f"void {program.arg.function_name}(",
       "for (int Lidx1 = 0; Lidx1 < 2; Lidx1++)",
       "for (int Ridx0 = 0; Ridx0 < 3; Ridx0++)",
       "(val0*val0)",
@@ -229,7 +231,7 @@ def optional_mock_cuda_mode() -> None:
   ptx = binary.decode("utf-8")
   assert binary.endswith(b"\x00"), "NVRTC's PTX result includes its terminating NUL byte"
   cuda_witnesses = (
-    'extern "C" __global__ void __launch_bounds__(1) r_2_3',
+    f'extern "C" __global__ void __launch_bounds__(1) {program.arg.function_name}',
     "blockIdx.x",
     "for (int Ridx0 = 0; Ridx0 < 3; Ridx0++)",
   )
