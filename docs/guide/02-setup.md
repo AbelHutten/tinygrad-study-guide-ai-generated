@@ -589,6 +589,16 @@ mutation, and lifecycle observations without claiming a device graph or
 accelerator timing result, and they are not repeated for added hardware
 `--device` values.  Chapter 13 gives a separate, explicitly scoped way to run
 the state walk on a selected accelerator.
+The Phase 4 NVIDIA-path lab always runs its hardware-free `static` mode on
+`PYTHON::sm_89`.  For the exact added routes `CUDA`, `CUDA:PTX`, `NVK+NV`, or
+`NVK+NV:PTX`, the runner also selects the matching physical mode and requires
+it to be available.  A recognized missing driver, device node, compiler
+library, or exact ABI symbol therefore fails an explicitly requested runner
+route instead of being counted in the final success line.  The ordinary manual
+lab command remains non-failing on a recognized unavailable host unless
+`--require-available` is supplied.  Chapter 14 explains the route-specific
+evidence and the NV initialization commands which can precede renderer
+preflight.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 

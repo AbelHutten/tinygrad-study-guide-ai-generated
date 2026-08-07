@@ -25,6 +25,12 @@ RUNTIME_LABS = (
   ROOT / "labs/phase3/inspect_program.py",
   ROOT / "labs/phase4/runtime_walk.py",
 )
+NVIDIA_PHYSICAL_MODES = {
+  "CUDA": "cuda",
+  "CUDA:PTX": "cuda-ptx",
+  "NVK+NV": "nvk-nv",
+  "NVK+NV:PTX": "nvk-nv-ptx",
+}
 
 
 def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Path, jit: int = 1,
@@ -70,6 +76,8 @@ def main() -> int:
     jit_walk = ROOT / "labs/phase4/jit_three_calls.py"
     for jit in (0, 1, 2): run_lab(python, checkout, jit_walk, "PYTHON", cache_dir, jit=jit)
     run_lab(python, checkout, ROOT / "labs/phase4/jit_contracts.py", "PYTHON", cache_dir, jit=1)
+    nvidia_lab = ROOT / "labs/phase4/nvidia_paths.py"
+    run_lab(python, checkout, nvidia_lab, "PYTHON::sm_89", cache_dir, jit=0, lab_args=("--mode", "static"))
 
     # This route exercises NVIDIA-targeted lowering without claiming to test a
     # physical GPU, driver, concurrent execution, launch behavior, or performance.
@@ -90,6 +98,9 @@ def main() -> int:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
       if device == "CPU" or device.startswith("CPU:CLANG"):
         run_lab(python, checkout, render_lab, device, cache_dir)
+      if (nvidia_mode := NVIDIA_PHYSICAL_MODES.get(device)) is not None:
+        run_lab(python, checkout, nvidia_lab, device, cache_dir, jit=0,
+                lab_args=("--mode", nvidia_mode, "--require-available"))
 
   print("\nAll selected labs passed.")
   return 0
