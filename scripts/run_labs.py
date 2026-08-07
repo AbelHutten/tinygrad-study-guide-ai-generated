@@ -17,6 +17,7 @@ PORTABLE_LABS = (
   ROOT / "labs/phase2/frontend_autograd.py",
   ROOT / "labs/phase2/uop_walk.py",
   ROOT / "labs/phase2/rewrite_lab.py",
+  ROOT / "labs/phase3/schedule_walk.py",
 )
 RUNTIME_LABS = (
   ROOT / "labs/phase3/inspect_program.py",
@@ -31,6 +32,7 @@ def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Pat
     "DEV": device,
     "DEBUG": "0",
     "JIT": str(jit),
+    "NO_MEMORY_PLANNER": "0",
     "CACHEDB": str(cache_dir / f"{lab.stem}-{device.replace(':', '_')}-jit{jit}.db"),
     "PYTHONPATH": str(checkout) + (os.pathsep + old_pythonpath if old_pythonpath else ""),
   })
