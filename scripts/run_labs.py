@@ -108,6 +108,9 @@ def main() -> int:
     run_lab(python, checkout, testing_lab, "PYTHON", cache_dir, jit=0, lab_args=("--mode", "red"))
     run_lab(python, checkout, testing_lab, "PYTHON", cache_dir, jit=0, lab_args=("--mode", "green"))
 
+    performance_lab = ROOT / "labs/phase5/performance_walk.py"
+    run_lab(python, checkout, performance_lab, "PYTHON", cache_dir, jit=0, lab_args=("--samples", "5"))
+
     for device in args.device:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
       if device == "CPU" or device.startswith("CPU:CLANG"):
@@ -115,6 +118,8 @@ def main() -> int:
       if (nvidia_mode := NVIDIA_PHYSICAL_MODES.get(device)) is not None:
         run_lab(python, checkout, nvidia_lab, device, cache_dir, jit=0,
                 lab_args=("--mode", nvidia_mode, "--require-available"))
+      if device != "PYTHON":
+        run_lab(python, checkout, performance_lab, device, cache_dir, jit=0, lab_args=("--samples", "5"))
 
   print("\nAll selected labs passed.")
   return 0

@@ -614,6 +614,14 @@ exact set and count of assertion failures with zero unexpected errors; the
 green mode must pass the same contract through tinygrad.  Neither mode is
 repeated for added devices because this lab teaches test power and portable
 oracle design, not backend coverage.
+The Phase 5 performance walk always runs five samples on exact `PYTHON` and
+then repeats on every additional device except a duplicate `PYTHON` entry.  It
+checks an independent exact oracle before timing, immediately after its
+synchronized wall samples, and again after its internal `time_call` samples.
+It reports raw distributions and concrete backend/interface,
+renderer/compiler/runtime, target, and artifact identities but asserts no speed
+threshold.  Bare `NV` and direct `PCI` spellings are rejected before tinygrad
+imports; use an explicit driver-backed route such as `NVK+NV` or `CUDA`.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 
