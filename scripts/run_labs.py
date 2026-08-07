@@ -23,6 +23,7 @@ PORTABLE_LABS = (
 )
 RUNTIME_LABS = (
   ROOT / "labs/phase3/inspect_program.py",
+  ROOT / "labs/phase4/runtime_walk.py",
   ROOT / "labs/phase4/jit_three_calls.py",
 )
 

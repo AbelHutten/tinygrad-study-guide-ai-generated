@@ -574,6 +574,13 @@ runner also compiles and executes the Clang route. It does not run this
 route-specific lab on added CUDA or NVK devices. The runner sets
 `PYTHONOPTIMIZE=0` so Python cannot strip the labs' assertion-based evidence
 checks.
+The Phase 4 runtime walk runs first on the synchronous `PYTHON` baseline and
+again on every explicitly added `--device`. It checks common device, buffer,
+program-loading, dispatch, synchronization, and result contracts, while making
+backend-class assertions only for the routes it names. On this guide's Ubuntu
+host it has also been exercised successfully on the RTX 4090 through both
+`CUDA` and `NVK+NV`; that local observation is not a portability guarantee for
+another driver or machine.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 
