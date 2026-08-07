@@ -563,6 +563,9 @@ The Phase 3 kernel-optimization lab runs its core, strict-padding, and
 padding-enabled modes only on `PYTHON::sm_89`. They check pinned Ada-targeted
 options, `WMMA` structure, and complete small results with the Python executor,
 never on an added hardware backend, and make no physical-GPU or timing claim.
+The Phase 3 lowering lab also runs only on that structural route, with
+`NOOPT=1` and `SPEC=2`, so its range, accumulator, address, barrier, and control
+assertions describe one intentionally controlled lowered program.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 
