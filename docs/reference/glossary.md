@@ -34,23 +34,24 @@ what to inspect or measure.
 | HCQ | tinygrad's hardware-command-queue abstraction used by lower-level device paths and graph replay. |
 | IR | Intermediate representation: a machine-processable program form between user intent and executable code. tinygrad uses multiple UOp graph states rather than unrelated node classes for every stage. |
 | JIT capture | Recording and parameterizing a realized execution plan so later calls can replay it with much less Python/compiler work. |
-| Kernel | One accelerator program launch. A fused kernel may implement many user-visible tensor operations. |
+| Kernel | A compute program or function. tinygrad uses the term for a fused compute unit across backends; on an accelerator, parallel workers execute it. A launch is one invocation, not the program itself. |
 | Kernel AST | The `SINK`-rooted UOp graph describing one kernel before it becomes a rendered/compiled `PROGRAM`. |
 | Kernel schedule | Loop/layout optimization choices inside one kernel. Do not confuse this with the ordered multi-kernel `LINEAR` execution schedule. |
+| Launch | One invocation of an accelerator kernel with particular arguments and dimensions. One compiled kernel may be launched many times. |
 | Liveness | The interval during which a value or buffer may still be used. It informs register allocation and reusable memory planning. |
 | Local memory | GPU workgroup-shared on-chip memory (CUDA “shared memory”), not thread-private spill memory despite vendor terminology differences. |
 | Lowering | Replacing a higher-level valid representation with a more target-specific or explicit valid representation. |
-| Materialization | Computing a lazy value into storage, creating a boundary that prevents fusion across that value. |
+| Materialization | Computing a logical value into storage, ordinarily establishing a storage/fusion boundary. Virtual values can be special cases without an ordinary allocation. |
 | Memory hierarchy | Storage levels with different capacity, latency, bandwidth, visibility, and management: registers, shared/L1, L2, device memory, and host memory. |
 | Occupancy | How many warps/workgroups can reside on a GPU execution unit relative to its limit; registers and shared memory often constrain it. High occupancy is a means, not the goal itself. |
 | Process replay | tinygrad's comparison of compiler-process inputs and generated kernels across revisions, especially useful for refactors and speed changes. |
 | Rangeification | tinygrad's conversion of shape/movement semantics into explicit iteration ranges and index expressions while forming kernel work. |
-| Realization | Triggering computation so a lazy tensor obtains backed storage. |
+| Realization | tinygrad's operation for running required work and ensuring backing where needed. Virtual values may need no ordinary allocation, and realization alone does not prove host synchronization. |
 | Register allocation | Mapping temporary values to a finite target register set and, when necessary, spills. |
 | Renderer | Target-specific conversion from lowered UOps to source text or native instruction representation. |
 | Rewrite fixed point | A state in which applying the relevant rewrite rules produces no further replacement. Termination and rule ordering matter when seeking it. |
 | Roofline model | A bound comparing peak compute with bandwidth times arithmetic intensity; useful for rejecting impossible performance expectations. |
-| Runtime | Device-specific memory, program loading, launch, copy, synchronization, and optional graph machinery. |
+| Runtime | Broad name for device-execution machinery. In this snapshot, `Buffer`/`Allocator` own storage and copies, `Program` loads and invokes compiled work, and the compiled device exposes synchronization and optional graph support. |
 | Side effect | Observable state change such as a buffer write or device submission; dependencies must remain ordered even when pure expressions are freely rewritten. |
 | SIMT | Single-instruction, multiple-thread execution: GPU lanes execute in groups (warps/wavefronts) with masking/divergence behavior. |
 | Symbolic value | A value represented by an expression plus constraints/bounds rather than one fixed integer, commonly used for shapes and launch parameters. |

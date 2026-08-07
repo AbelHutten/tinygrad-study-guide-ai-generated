@@ -128,8 +128,9 @@ effects, and current local heuristics.
 Fusion keeps a producer expression in a consumer kernel. It usually avoids an
 intermediate write and later read, but can duplicate computation, increase the
 number of live values, or produce worse indexing. Materialization computes the
-producer into storage. It costs traffic and a launch, but creates reuse and a
-clean boundary.
+producer into storage. It costs traffic and a separate compute-program call—an
+accelerator launch on that kind of backend—but creates reuse and a clean
+boundary.
 
 Treat `contiguous()` as a semantic request to materialize contiguous storage,
 not as a general “make this faster” operation. When investigating a surprising

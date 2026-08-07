@@ -18,7 +18,7 @@ and answer:
 
 - Does `DEV=PYTHON` produce `[0.0, 0.0, 1.0, 3.0]` for the Phase 1 expression?
 - Can you distinguish a Tensor root, a graph node, a scheduled call, generated
-  source, and a launch?
+  source, a program invocation, and an accelerator launch?
 - Can you say which checkout and backend produced an observation?
 
 You need only basic graph traversal and the host/device/kernel model from
@@ -42,7 +42,7 @@ the useful questions change as it moves downward:
 | Scheduling | Where are kernel/copy/view boundaries, and what order preserves dependencies? | An `Ops.LINEAR` root containing calls |
 | Kernel lowering | How are shapes and views expressed as iteration and memory access? | A kernel `SINK`, then lower-level UOps |
 | Rendering/compilation | What program will this target load? | `PROGRAM` with `SOURCE`, `BINARY`, and `ProgramInfo` |
-| Execution | Which buffers and launch dimensions reach the runtime? | `exec_kernel` and one `DEBUG=2` launch line |
+| Execution | Which buffers and dimensions reach the runtime invocation? | `exec_kernel` and one `DEBUG=2` compute-call line |
 
 At snapshot `874d331`, realization follows this route:
 
@@ -76,8 +76,13 @@ kernel can load an input vector, perform all arithmetic, and store the output.
 
 That is a possibility, not a universal rule. Explicit realization, cross-device
 copies, dependencies involving mutation, reductions, and target constraints
-can introduce boundaries. Always inspect the plan rather than inferring launch
-count from Python syntax.
+can introduce boundaries. Always inspect the plan rather than inferring
+compute-call—or accelerator-launch—count from Python syntax.
+
+tinygrad commonly calls a fused compute unit a *kernel* even on `CPU` or
+`PYTHON`. This chapter follows that compiler terminology for graph artifacts.
+For execution events, it uses *program invocation* or *compute call* across
+backends and reserves *kernel launch* for an accelerator invocation.
 
 ## Source tour
 
@@ -93,7 +98,7 @@ above.
 | Full schedule construction | `create_linear_with_vars` resolves scheduled parameters to buffers, creates copy calls, resolves variables, and applies memory planning. | [`tinygrad/schedule/__init__.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/schedule/__init__.py#L170-L199) |
 | Kernel `SINK` → `PROGRAM` | `do_to_program` performs target rewrites, derives launch metadata, linearizes, renders source, and compiles bytes. | [`tinygrad/codegen/__init__.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/codegen/__init__.py#L433-L485) |
 | Plan → dispatch | `compile_linear` converts kernel bodies to programs; `run_linear` dispatches each call by its body op. | [`tinygrad/engine/realize.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/engine/realize.py#L247-L281) |
-| Program → launch | `exec_kernel` allocates referenced buffers, obtains a cached runtime, resolves launch dimensions, and invokes it. | [`tinygrad/engine/realize.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/engine/realize.py#L176-L186) |
+| Program → invocation | `exec_kernel` allocates referenced buffers, obtains a cached runtime program, resolves execution dimensions, and invokes it. On an accelerator, that invocation is a kernel launch. | [`tinygrad/engine/realize.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/engine/realize.py#L176-L186) |
 
 ## Lab A: stop between scheduling and execution
 
@@ -148,7 +153,8 @@ value: [0.0, 0.0, 1.0, 3.0]
 Interpret each line:
 
 - `WHERE` is a semantic frontend root, not a Python control-flow branch.
-- `CALL(SINK)` is a scheduled but not yet target-compiled kernel call.
+- `CALL(SINK)` is a scheduled compute call whose body describes a kernel, but
+  it is not yet a target-compiled program.
 - Two buffers are the output and input; scalar constants are embedded in the
   kernel rather than passed as buffers.
 - `LINEAR` records one call, but no runtime has executed it yet.
@@ -169,7 +175,7 @@ the computation of interest.
 
 Predict that the scoped debug region will show:
 
-1. one scheduled kernel;
+1. one scheduled compute program;
 2. one generated C function containing multiply, add, comparison/selection,
    and one output store; and
 3. one `*** CPU` execution line after the counters are reset.
@@ -193,17 +199,17 @@ PY
 At `874d331`, the function is named `E_4` and uses a four-wide vector. Names,
 vectorization, and timings can change with target and optimizer revisions. The
 invariant to check is that the generated function contains the whole
-expression and the debug summary reports one compute launch.
+expression and the debug summary reports one compute call.
 
 `DEBUG=4` is source, not proof of execution. The `*** CPU ... E_4 ...` line is
 the separate runtime observation. Keeping those two artifacts distinct becomes
-important when compilation succeeds but a launch fails, or when correct source
-is launched with wrong dimensions or arguments.
+important when compilation succeeds but invocation fails, or when correct
+source is invoked with wrong dimensions or arguments.
 
 ## Lab C: move the boundary yourself
 
-An explicit realization is a materialization barrier. Predict the launch count
-for each case, then run:
+An explicit realization is a materialization barrier. Predict the compute-call
+count for each case, then run:
 
 ```bash
 CACHEDB=/tmp/tinygrad-guide-fusion.db DEV=PYTHON DEBUG=0 \
@@ -214,20 +220,20 @@ x = Tensor([-2.0, -1.0, 0.0, 1.0]).realize()
 
 GlobalCounters.reset()
 fused = (x * 2 + 1).relu().realize()
-print("fused launches:", GlobalCounters.kernel_count, fused.tolist())
+print("fused compute calls:", GlobalCounters.kernel_count, fused.tolist())
 
 GlobalCounters.reset()
 barrier = (x * 2 + 1).realize()
 split = barrier.relu().realize()
-print("barrier launches:", GlobalCounters.kernel_count, split.tolist())
+print("barrier compute calls:", GlobalCounters.kernel_count, split.tolist())
 PY
 ```
 
 Checkpoint output:
 
 ```text
-fused launches: 1 [0.0, 0.0, 1.0, 3.0]
-barrier launches: 2 [0.0, 0.0, 1.0, 3.0]
+fused compute calls: 1 [0.0, 0.0, 1.0, 3.0]
+barrier compute calls: 2 [0.0, 0.0, 1.0, 3.0]
 ```
 
 The semantics did not change; the execution plan did. This is the smallest
@@ -236,8 +242,9 @@ correctness, imposed by a representation, or merely chosen by the compiler?”
 
 Despite its name, `GlobalCounters.kernel_count` is incremented for tracked
 execution-plan calls, including copies or views. In this controlled region the
-only counted calls are compute kernels; do not use the counter alone to
-classify calls in a larger trace.
+only counted calls are compute-program invocations. They are not GPU launches
+on the Python backend. Do not use the counter alone to classify calls in a
+larger trace.
 
 ## Accelerator branch: replay the trace on the 4090
 
@@ -283,7 +290,7 @@ precise.
 | Calling `.tolist()` seems to add work | Value observation must make data host-readable. Separate compute realization from observation as Lab B does. |
 | CPU debug output contains support programs | `DEBUG=4` was active during CPU device initialization. Keep `DEBUG=0` in the environment and use `Context(DEBUG=4)` only around `y.realize()`. |
 | Generated code is absent on a repeated in-process run | A compiled program may already be in an in-process cache. Use a fresh process; use a fresh `CACHEDB` path when compilation itself is under study. |
-| `NULL` cannot return the expected list | `NULL` is for compiler-path tests and fake launches, not numerical copyout. Use `PYTHON` for the semantic control. |
+| `NULL` cannot return the expected list | `NULL` is for compiler-path tests and no-op execution calls, not numerical copyout. Use `PYTHON` for the semantic control. |
 | Kernel name or exact source differs | Confirm the snapshot. On current master, compare invariants and re-find symbols rather than matching old text. |
 | `schedule_linear()` was called and then `.realize()` gives surprising work | The scheduling helper updates Tensor roots to planned buffers. For this lab execute the returned plan exactly once with `run_linear`; in application code use only `.realize()`. |
 
@@ -292,14 +299,14 @@ precise.
 Pass this checkpoint using artifacts from your own run, not the expected text
 above:
 
-1. Draw the path from `y.uop` to the runtime launch and label the artifact at
-   every boundary.
-2. Explain why the expression is lazy, what forces it, and why one launch is
-   sufficient in the fused case.
+1. Draw the path from `y.uop` to the runtime program invocation and label the
+   artifact at every boundary; identify the accelerator launch on that branch.
+2. Explain why the expression is lazy, what forces it, and why one compute call
+   is sufficient in the fused case.
 3. Point to the `LINEAR` call count, generated function body, runtime line, and
    final value that support the explanation.
-4. Insert the materialization barrier and explain why it changes launch count
-   without changing values.
+4. Insert the materialization barrier and explain why it changes compute-call
+   count without changing values.
 5. Repeat on your primary accelerator, or record the exact layer preventing
    that run while preserving a passing portable trace.
 
@@ -321,7 +328,7 @@ graph language and rewrite machinery.
 | `DEBUG=3` | Single-kernel scheduling and applied optimization detail. |
 | `DEBUG=4` | Generated target source. |
 | `CACHEDB=/tmp/name.db` | Isolate the persistent compiler/search cache for an experiment. |
-| `GlobalCounters.reset()` | Make subsequent launch counts local to the region under study. |
+| `GlobalCounters.reset()` | Make subsequent tracked-call counts local to the region under study. |
 
 ### Pinned pipeline entry points
 
