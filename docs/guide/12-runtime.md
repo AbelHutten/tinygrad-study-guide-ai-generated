@@ -565,6 +565,12 @@ The name is historical or suggestive; the type is used as a generic transport
 between `Ops.PROGRAM` and a backend `Program`.  Nothing in the dataclass
 requires `lib` to start with an ELF header or contain native machine code.
 
+`UOp.to_elf()` stores `ProgramInfo.function_name`, the sanitized callable
+symbol, not necessarily the raw debug-oriented `ProgramInfo.name`. The raw
+name can contain color escapes or receive a collision suffix. Compare the
+transport name to `program.arg.function_name`; comparing it to
+`program.arg.name` is an environment-dependent mistake.
+
 For routes already studied:
 
 | Route | What `TinyELF.lib` carries |
@@ -943,7 +949,7 @@ invalidate the evidence contract.
 The Python route should report:
 
 ```text
-controlled env: BEAM=0 CACHELEVEL=0 DEBUG=0 HCQ2=0 IMAGE=0 NOOPT=1 SPEC=2 TC=0 THREADS=1 VALIDATE_WITH_CPU=0 VIZ=0
+controlled env: BEAM=0 CACHELEVEL=0 DEBUG=0 HCQ2=0 IMAGE=0 NO_COLOR=1 NOOPT=1 SPEC=2 TC=0 THREADS=1 VALIDATE_WITH_CPU=0 VIZ=0
 selection
   Device.DEFAULT: PYTHON
   canonical samples: {'python': 'PYTHON', 'python:0': 'PYTHON', 'python:2': 'PYTHON:2'}

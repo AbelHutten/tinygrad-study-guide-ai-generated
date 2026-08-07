@@ -19,6 +19,7 @@ for key, value in {
   "DEBUG": "0",
   "HCQ2": "0",
   "IMAGE": "0",
+  "NO_COLOR": "1",
   "NOOPT": "1",
   "SPEC": "2",
   "TC": "0",
@@ -190,7 +191,7 @@ def show_program_lifecycle() -> None:
 
   assert raw_body is Ops.SINK and call.src[0].op is Ops.PROGRAM
   assert isinstance(transport, TinyELF) and isinstance(transport.lib, bytes)
-  assert transport.name == program.arg.name and transport.target == program.arg.target
+  assert transport.name == program.arg.function_name and transport.target == program.arg.target
   assert transport.signature == EXPECTED_SIGNATURE
   assert program.arg.globals == (0, 1) and program.arg.outs == (0,) and program.arg.ins == (1,)
   assert not resolved_before[0].buffer.is_allocated() and resolved_before[1].buffer.is_allocated()
@@ -245,7 +246,7 @@ def show_program_lifecycle() -> None:
 
 
 def main() -> None:
-  print("controlled env: BEAM=0 CACHELEVEL=0 DEBUG=0 HCQ2=0 IMAGE=0 NOOPT=1 SPEC=2 TC=0 THREADS=1 VALIDATE_WITH_CPU=0 VIZ=0")
+  print("controlled env: BEAM=0 CACHELEVEL=0 DEBUG=0 HCQ2=0 IMAGE=0 NO_COLOR=1 NOOPT=1 SPEC=2 TC=0 THREADS=1 VALIDATE_WITH_CPU=0 VIZ=0")
   show_selection()
   show_buffer_lifecycle()
   show_program_lifecycle()
