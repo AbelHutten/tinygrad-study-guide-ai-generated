@@ -18,6 +18,7 @@ PORTABLE_LABS = (
   ROOT / "labs/phase2/uop_walk.py",
   ROOT / "labs/phase2/rewrite_lab.py",
   ROOT / "labs/phase3/schedule_walk.py",
+  ROOT / "labs/phase3/shapes_and_indexing.py",
 )
 RUNTIME_LABS = (
   ROOT / "labs/phase3/inspect_program.py",
