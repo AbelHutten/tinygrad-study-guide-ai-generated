@@ -566,6 +566,14 @@ never on an added hardware backend, and make no physical-GPU or timing claim.
 The Phase 3 lowering lab also runs only on that structural route, with
 `NOOPT=1` and `SPEC=2`, so its range, accumulator, address, barrier, and control
 assertions describe one intentionally controlled lowered program.
+The Phase 3 rendering walk executes its serialized artifact on `PYTHON`, checks
+a hardware-free direct-PTX artifact, and tries CUDA C-to-PTX only when an NVRTC
+library can be loaded. An NVRTC compile rejection fails; only the explicit
+missing-library state skips. When an added device is `CPU` or `CPU:CLANG`, the
+runner also compiles and executes the Clang route. It does not run this
+route-specific lab on added CUDA or NVK devices. The runner sets
+`PYTHONOPTIMIZE=0` so Python cannot strip the labs' assertion-based evidence
+checks.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 

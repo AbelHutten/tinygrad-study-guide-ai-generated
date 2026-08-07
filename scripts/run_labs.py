@@ -19,6 +19,7 @@ PORTABLE_LABS = (
   ROOT / "labs/phase2/rewrite_lab.py",
   ROOT / "labs/phase3/schedule_walk.py",
   ROOT / "labs/phase3/shapes_and_indexing.py",
+  ROOT / "labs/phase3/render_walk.py",
 )
 RUNTIME_LABS = (
   ROOT / "labs/phase3/inspect_program.py",
@@ -35,6 +36,7 @@ def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Pat
     "DEBUG": "0",
     "JIT": str(jit),
     "NO_MEMORY_PLANNER": "0",
+    "PYTHONOPTIMIZE": "0",
     "CACHEDB": str(cache_dir / f"{lab.stem}-{device.replace(':', '_')}-jit{jit}.db"),
     "PYTHONPATH": str(checkout) + (os.pathsep + old_pythonpath if old_pythonpath else ""),
   })
@@ -77,9 +79,14 @@ def main() -> int:
     run_lab(python, checkout, kernel_lab, "PYTHON::sm_89", cache_dir, lab_args=("--mode", "padding-enabled"))
     run_lab(python, checkout, ROOT / "labs/phase3/lowering_walk.py", "PYTHON::sm_89", cache_dir,
             extra_env={"NOOPT": "1", "SPEC": "2"})
+    render_lab = ROOT / "labs/phase3/render_walk.py"
+    run_lab(python, checkout, render_lab, "PYTHON", cache_dir, lab_args=("--mock-ptx",))
+    run_lab(python, checkout, render_lab, "PYTHON", cache_dir, lab_args=("--optional-mock-cuda",))
 
     for device in args.device:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
+      if device == "CPU" or device.startswith("CPU:CLANG"):
+        run_lab(python, checkout, render_lab, device, cache_dir)
 
   print("\nAll selected labs passed.")
   return 0
