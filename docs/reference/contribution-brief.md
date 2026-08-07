@@ -1,16 +1,25 @@
 # Contribution brief template
 
-Complete this before changing a real issue or bounty. The brief is an
-investigation artifact, not a promise that the first proposed fix is correct.
+Complete this before substantial work on a real issue, bounty, or self-chosen
+improvement. The brief is an investigation artifact, not a promise that the
+first proposed fix is correct or that upstream wants it.
 
 ## Claim
 
 ```text
-Issue/bounty URL:
-Status checked at (UTC time):
-Commit reproduced:
-One-sentence correctness, performance, or maintainability claim:
-Why this belongs in tinygrad core:
+Candidate and origin (URL or self-chosen observation):
+Current status, owner, bounty terms, and maintainer direction:
+Policy checked at (UTC time and URL):
+Open issue/PR overlap checked at (UTC time and queries):
+Current base and reproduced commit hashes:
+Falsifiable correctness, performance, or maintainability contract:
+Preconditions:
+Success criteria:
+Explicit non-goals:
+Why this belongs upstream in the affected project area now:
+Evidence or upstream event that would make you stop:
+Current decision (Ready | Research | Question | Decline):
+Evidence that would change that decision:
 ```
 
 A useful claim is falsifiable. “Scheduling is slow” is not; “this graph creates
@@ -24,6 +33,8 @@ Reproducer or benchmark path:
 Exact command and environment:
 Expected result:
 Actual result:
+Independent oracle and tolerance, if any:
+Baseline-red result and failure reason:
 Smallest known shape/dtype/device:
 Control backend or revision:
 First bad or costly artifact:
@@ -39,7 +50,7 @@ Primary subsystem:
 Transformation that owns the first divergence:
 Relevant source symbols:
 Nearest existing tests:
-Recent commits/PRs that explain intent:
+Current source plus recent commits/PRs that explain intent:
 Maintainer guidance already given:
 ```
 
@@ -69,6 +80,8 @@ Semantic preconditions:
 Alternatives rejected and why:
 New complexity or lines justified by:
 Independent prerequisite refactor, if any:
+Explicitly out-of-scope edits:
+Atomic commit sequence and validation at each commit:
 ```
 
 A prerequisite refactor must be a clear win without the follow-up feature. If
@@ -91,6 +104,7 @@ Fuzzing:
 Process replay:
 Static checks:
 Hardware-only evidence:
+Explicitly unrun checks and why:
 ```
 
 Mark non-applicable rows and explain why. “Full tests pass” is not a substitute
@@ -101,16 +115,21 @@ for a test that fails for the reported reason before the change.
 Complete this section for every speed claim.
 
 ```text
-Device, driver, backend, renderer, target:
-Commit and all relevant environment flags:
+Claimed metric and layer (compile, model, kernel, submission, other):
+Acceptance threshold and observation that would falsify the claim:
+Requested/canonical device, interface, backend, renderer, compiler, runtime, target:
+Machine, OS, driver/toolchain/library versions, power and clock state:
+Commit and exact cache/JIT/search/compiler environment controls:
+CACHELEVEL/CACHEDB/CCACHE/SCACHE/BEAM/JIT state:
 Workload, shapes, dtypes, model state:
 Correctness oracle/tolerance:
-Warm-up and cache state:
-Synchronization/timing mechanism:
+Warm-up, allocation, compile, and cache state:
+Exact timed endpoints and synchronization mechanism:
+Baseline/candidate sample order or interleaving:
 Number of samples and reported distribution:
 Baseline result:
 Patched result:
-Compile time:
+Compile/search time with stated boundaries:
 Model schedule/kernel count and memory traffic:
 Affected kernel time and generated-code difference:
 Noise floor and repeatability:
@@ -132,17 +151,41 @@ Observable signal for regression:
 Simplest rollback:
 ```
 
+## Communication and provenance
+
+```text
+Question or status update needed before more work:
+When to ask, pause, hand off, or decline:
+Copied or adapted code/data and exact source:
+Third-party license and retained-notice treatment:
+Employer ownership/confidentiality check:
+AI/tool assistance and current-policy disclosure:
+Credentials, private data, or generated artifacts excluded from the diff:
+```
+
+“I wrote the patch” is not a provenance audit. State whether an implementation
+or test was copied or adapted, identify its license, and retain required notices
+locally. Do not publish employer-owned or confidential material. Reopen current
+upstream policy before deciding how AI/tool assistance must be disclosed.
+
 ## Review-ready summary
 
 ```text
 Why merge this:
 What changed:
 What did not change:
+Atomic commits and why each stands alone:
 How correctness was established:
 How performance was established (if claimed):
 Known limitations:
+Checks intentionally not run:
+Current issue/PR overlap rechecked at:
+Third-party/license/employer provenance:
 AI/tool assistance disclosed as required by current upstream policy:
 ```
 
 Before opening a PR, re-read the live upstream contribution section, re-check
-issue/bounty ownership, update from `master`, and rerun the relevant evidence.
+issue/bounty ownership and overlapping PRs, update from `master`, rerun the
+relevant evidence, and record what remains untested. If a premise, owner,
+policy, or competing change has moved, pause and update the claim before
+submitting.

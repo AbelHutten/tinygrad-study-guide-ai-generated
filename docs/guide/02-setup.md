@@ -622,6 +622,15 @@ It reports raw distributions and concrete backend/interface,
 renderer/compiler/runtime, target, and artifact identities but asserts no speed
 threshold.  Bare `NV` and direct `PCI` spellings are rejected before tinygrad
 imports; use an explicit driver-backed route such as `NVK+NV` or `CUDA`.
+The Phase 5 contribution walk runs both its intentionally incomplete and
+complete artificial evidence packets.  Before evaluating either, it scrubs Git
+repository redirection from its subprocess environment, requires the supplied
+study checkout to be the exact pinned top level and commit, rejects any tracked
+worktree/index difference or hidden index flag, and independently verifies
+every tracked file's blob identity and executable bit against `HEAD`.  It then
+reads
+six selected policy/process files.  It ignores untracked files, performs no
+network request or checkout write, and is not repeated for added devices.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 

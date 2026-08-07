@@ -111,6 +111,12 @@ def main() -> int:
     performance_lab = ROOT / "labs/phase5/performance_walk.py"
     run_lab(python, checkout, performance_lab, "PYTHON", cache_dir, jit=0, lab_args=("--samples", "5"))
 
+    contribution_lab = ROOT / "labs/phase5/contribution_walk.py"
+    run_lab(python, checkout, contribution_lab, "PYTHON", cache_dir, jit=0,
+            lab_args=("--tinygrad", str(checkout), "--case", "incomplete"))
+    run_lab(python, checkout, contribution_lab, "PYTHON", cache_dir, jit=0,
+            lab_args=("--tinygrad", str(checkout), "--case", "complete"))
+
     for device in args.device:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
       if device == "CPU" or device.startswith("CPU:CLANG"):
