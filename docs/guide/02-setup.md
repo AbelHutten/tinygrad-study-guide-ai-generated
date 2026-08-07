@@ -607,6 +607,13 @@ lowered program and prove that `SOURCE` is the first differing artifact after
 an identical `LINEAR`; they do not edit tinygrad or turn arbitrary failures
 into passing results.  Added accelerator devices do not cause this deliberately
 CPU-renderer-specific experiment to be replayed on a GPU.
+The Phase 5 testing walk then runs its deliberate-red mutant and green
+regression in separate processes on exact `PYTHON`.  Both modes use one
+unchanged five-test semantic contract.  The red mode succeeds only for its
+exact set and count of assertion failures with zero unexpected errors; the
+green mode must pass the same contract through tinygrad.  Neither mode is
+repeated for added devices because this lab teaches test power and portable
+oracle design, not backend coverage.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 

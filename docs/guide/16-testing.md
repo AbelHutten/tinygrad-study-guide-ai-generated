@@ -1,44 +1,381 @@
 # 16. Testing a contribution
 
-## Purpose
+## The promise of this chapter
 
-A fix is not complete when the reproducer turns green. A contribution needs an
-argument that:
+Chapter 15 ended with a localized defect: a known input, a known correct
+answer, a last good artifact, and a first bad artifact.  That is enough to know
+where to work.  It is not yet enough to make the work safe for everyone else.
+
+A test turns that one debugging episode into a claim that can be checked again
+after the code changes.  A useful contribution needs an argument that:
 
 - the old code violated a named contract;
-- the focused test observes that violation and fails for the intended reason;
-- the new code satisfies the contract over the relevant domain; and
-- broader compiler, backend, runtime, and CI behavior remains intact.
+- the focused test really observes that contract and goes red for the intended
+  reason;
+- the new code makes the same test green;
+- nearby cases show the boundary of the fix rather than only its easiest
+  example; and
+- broader checks give evidence about the other compiler, renderer, runtime,
+  and hardware surfaces that might have changed.
 
-This chapter teaches how to route a test into tinygrad's suite, choose semantic
-and structural assertions, use differential/property/fuzz testing, turn on IR
-and bounds validation, and escalate in proportion to the change.
+The word **argument** is important.  “I ran 5,000 tests” is not automatically a
+stronger argument than “this five-line test fails on the old rewrite, passes on
+the new rewrite, checks the transformation's output against an independent
+model, and then passes under `SPEC=2`.”  Test count measures work performed, not
+what that work was capable of detecting.
 
-**Source snapshot:** `874d331` (2026-08-05).
+This chapter starts from ordinary Python functions and assertions.  It does
+not assume prior compiler-testing knowledge.  It then builds the distinctions
+needed in tinygrad:
 
-## Prerequisite gate
+- behavior versus implementation structure;
+- example, differential, metamorphic, property, fuzz, and integration tests;
+- an implementation under test versus its oracle;
+- a focused regression versus a broad suite;
+- a backend-independent proof obligation versus a physical-device claim;
+- representation legality versus numerical correctness; and
+- local evidence versus the actual CI matrix.
 
-You should already be able to produce the first bad artifact using
-[the debugging method](15-debugging.md), and to state whether the broken
-contract belongs to the frontend, a rewrite, scheduling, lowering, rendering,
-runtime, or JIT. Test location follows contract ownership, not merely the file
-you edited.
+By the end, you should be able to write a small regression that genuinely goes
+red before a fix, place it in the appropriate part of tinygrad's suite, choose
+nearby cases and independent checks, and explain both what the resulting green
+tests establish and what they leave untested.
 
-Be comfortable selecting one pytest node and reading its failure report. The
-official pytest pages on
-[invocation](https://docs.pytest.org/en/stable/how-to/usage.html) and
-[assertions](https://docs.pytest.org/en/stable/how-to/assert.html) are enough.
-For floating arrays, understand `rtol`/`atol` in NumPy's
-[`assert_allclose`](https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_allclose.html).
-Return when you can explain why exact equality is wrong for many floating
-reductions and why an unnecessarily loose tolerance is also wrong.
+**Source snapshot:** `874d331` (2026-08-05).  Test names and CI jobs are
+particularly changeable.  Use the pinned links to learn the recorded system,
+then inspect current `master` before proposing a patch.
 
-Property-based testing is not a prerequisite for every patch. When the failure
-describes a family of shapes, dtypes, or expressions, follow the bounded
-Hypothesis route in
-[Learning resources](../reference/learning-resources.md#testing-transformations):
-constrained strategies, invariants, shrinking, deterministic replay, then back
-to the focused tinygrad test.
+## Route through the chapter
+
+Read the chapter in this order on the first pass:
+
+1. turn an informal bug report into a precise contract;
+2. separate the implementation, input, observation, oracle, and assertion;
+3. watch a deliberately weak test stay green for a known bug;
+4. make a focused counterexample go red for the right reason;
+5. run the same contract against tinygrad and make it green;
+6. decide which extra cases add a genuinely different detector;
+7. place the test according to the layer that owns the contract;
+8. add structural and validation checks only where their facts matter;
+9. widen through the relevant backend, runtime, replay, and hardware routes;
+10. read CI as executable documentation; and
+11. record a reviewable testing argument rather than a list of commands.
+
+The executable `labs/phase5/testing_walk.py` lab anchors the first five steps.
+It has one mode in which a known-bad implementation is expected to
+fail and another in which the exact same five-test contract must pass on
+tinygrad's portable Python backend.
+
+## The five pieces of a test
+
+Consider this expression for a two-dimensional tensor `x`:
+
+```python
+y = (x.permute(1, 0) + 1).sum(axis=1)
+```
+
+For a reader used to ML code, the operations may look routine.  Spell out the
+contract anyway:
+
+```text
+input x has shape (rows, cols)
+permute(1, 0) changes the logical shape to (cols, rows)
+adding 1 changes every logical element
+sum(axis=1) removes the rows dimension
+output therefore has shape (cols,)
+output[col] = sum(x[row, col] + 1 for every row)
+```
+
+For this concrete input:
+
+```text
+x = [[0, 1, 2],
+     [3, 4, 5]]
+```
+
+the output must be:
+
+```text
+column 0: (0 + 1) + (3 + 1) = 5
+column 1: (1 + 1) + (4 + 1) = 7
+column 2: (2 + 1) + (5 + 1) = 9
+result: [5, 7, 9]
+```
+
+A test of that statement has five separable pieces:
+
+| Piece | In this example | Why it must be explicit |
+| --- | --- | --- |
+| **Contract** | Permute changes the coordinate map; reduction then sums each original column and returns `cols` values. | Without a contract, a failure says only that two values differed. |
+| **Input/trigger** | A non-symmetric `2 × 3` matrix. | An input can accidentally avoid the suspected path or make a defect invisible. |
+| **Implementation under test** | tinygrad's Tensor graph through realization on the chosen backend. | The test must actually reach the code and route named in the claim. |
+| **Observation** | Output shape and numerical values; perhaps an intermediate artifact during localization. | A test sees only what it observes.  Unobserved properties are not tested. |
+| **Oracle** | `[5, 7, 9]`, derived by literal column loops. | Comparing with another answer is useful only if that answer has a trustworthy origin. |
+
+The final assertion is the comparison that turns these choices into a pass or
+failure:
+
+```python
+assert got == [5.0, 7.0, 9.0]
+```
+
+An assertion is not the whole test.  Most poor tests contain a perfectly valid
+`assert`; the weakness lies in the trigger, oracle, observation, or unstated
+contract around it.
+
+### What red and green mean
+
+In test language:
+
+- **red** means the test failed;
+- **green** means the test passed; and
+- a **regression test** is retained so the behavior does not silently return.
+
+For a bug fix, the focused test should be red on the unmodified buggy revision
+and green after the fix.  That two-state experiment proves two important facts:
+
+1. the test had power to detect the original defect; and
+2. something about the patch changed the observed behavior.
+
+It still does not prove that the patch is the best fix or works over the whole
+claimed domain.  That is why the test needs readable inputs, nearby negative
+cases, and broader evidence.  But skipping the red state is especially weak:
+the test may have been green all along, may never reach the changed code, or
+may assert a fact unrelated to the bug.
+
+When a bug cannot safely be recreated on the current checkout, keep the two
+revisions or worktrees separate and run the same test command in each.  Do not
+edit a dirty checkout back and forth merely to manufacture a screenshot.
+
+## A green example can be powerless
+
+Suppose an incorrect implementation forgets the transpose and instead sums the
+original rows.  Test it only on this symmetric square matrix:
+
+```text
+[[0, 1],
+ [1, 0]]
+```
+
+The correct column sums and the incorrect row sums are both `[3, 3]` after
+adding one.  The test is green, but it cannot distinguish the behavior from the
+known defect.  The mutant therefore **survives this particular input**: the
+wrong implementation and right implementation happen to be observationally
+identical here.  In mutation-testing terminology, reserve *equivalent mutant*
+for a mutant that no possible test can distinguish because its behavior is
+semantically equivalent over the whole relevant domain.
+
+Change to the earlier non-square matrix and the distinction becomes obvious:
+
+```text
+correct column-oriented result: [5, 7, 9]
+wrong row-oriented result:       [6, 15]
+```
+
+The shape differs as well as the values.  Rectangular shapes are not random
+extra coverage here; they are selected because they break a symmetry that
+conceals the hypothesized defect.  This is the kind of reasoning reviewers can
+evaluate.  “Added a `2 × 3` case because a square symmetric input cannot detect
+an omitted permutation” is stronger than “added another shape.”
+
+The idea of a **mutation test** is to introduce or model a known fault and ask
+whether the test suite kills it.  The lab does this safely with a local
+`row_sum_mutant`; it does not patch tinygrad.  You do not need to mutate every
+contribution.  It is a teaching device for the central question: *what precise
+wrong implementation would this assertion catch?*
+
+## Build an oracle that does not repeat the bug
+
+An oracle supplies the expected result.  There is no universally best oracle;
+choose the simplest source of truth that is sufficiently independent of the
+implementation under test.
+
+### Hand-derived values
+
+Literal values are excellent for tiny examples.  A reviewer can verify
+`[5, 7, 9]` without running another framework.  The limitation is scale: hand
+answers become error-prone for large shapes, symbolic expressions, exotic
+dtypes, and long reductions.
+
+### A simple independent model
+
+The lab implements the contract with ordinary Python loops:
+
+```python
+def independent_oracle(data, rows, cols):
+  return [
+    sum(data[row * cols + col] + 1.0 for row in range(rows))
+    for col in range(cols)
+  ]
+```
+
+It does not call `Tensor.permute`, tinygrad shape movement, or tinygrad
+reduction.  If the suspected bug is in those shared mechanisms, this separation
+matters.  A second implementation that calls the same faulty helper is not an
+independent oracle even if it lives in another test file.
+
+### Another library or backend
+
+NumPy or PyTorch can be useful differential oracles for Tensor semantics.
+Another tinygrad backend can expose target-specific rendering or runtime bugs.
+But first ask which code is shared:
+
+```text
+tinygrad PYTHON result == tinygrad CUDA result
+```
+
+is evidence against a CUDA-only defect.  It is weak evidence against a bug in
+the shared Tensor frontend, scheduling, or lowering that produced both
+programs.  Two agreeing routes are independent only over the parts where their
+implementations diverge.
+
+External frameworks also have their own contracts.  Match shape, dtype,
+promotion, overflow, reduction accumulation, NaN behavior, and layout before
+declaring one the oracle.  NumPy choosing `int64` where tinygrad retains a
+narrower integer is a contract mismatch, not automatically a tinygrad bug.
+
+### A relation instead of a complete answer
+
+A **metamorphic test** applies a transformation whose effect is known even when
+the complete output is inconvenient to calculate.  For the running example,
+adding a scalar `delta` to every input element must add `rows * delta` to each
+reduced column:
+
+```text
+f(x + delta)[col] == f(x)[col] + rows * delta
+```
+
+This checks a useful relationship without producing every expected sum
+independently.  It is complementary evidence, not an infallible oracle.  Two
+wrong computations can preserve the same relation.  The lab therefore keeps
+the literal counterexample and loop oracle too.
+
+## Numerical comparison is part of the contract
+
+The lab's data are small integers stored in `float32`, and its sums are exactly
+representable, so exact equality is intentional.  That choice would be wrong
+for many other floating computations.
+
+Floating-point arithmetic rounds after operations.  Reassociating a reduction,
+using a fused instruction, changing accumulation precision, or choosing a
+different transcendental approximation can change the last bits without
+changing the accepted mathematical behavior.  NumPy's `assert_allclose`
+checks approximately:
+
+```text
+abs(actual - expected) <= atol + rtol * abs(expected)
+```
+
+Here `atol` is an absolute allowance near zero and `rtol` scales with the
+expected magnitude.  The exact implementation also has policies for NaNs and
+asymmetry; read the
+[`assert_allclose` documentation](https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_allclose.html)
+before relying on remembered formulas.
+
+Choose tolerances from the dtype and operation, not by increasing them until a
+test passes.  A useful numerical test includes:
+
+- values near zero, where `atol` dominates;
+- nonzero values at the relevant scale, where `rtol` matters;
+- a case that would fail if the tolerance became suspiciously loose;
+- explicit NaN/Inf/signed-zero policy when those distinctions matter; and
+- the same accumulation dtype and overflow semantics as the contract.
+
+For a suspected numerical bug, report the maximum error, expected scale,
+dtype, reduction length, and selected tolerance.  “Close enough” is not a
+reviewable specification.
+
+## Prerequisite ladder
+
+You can begin the lab if you understand Python functions, loops, lists, and
+`assert`.  Before writing a real repository test, add only the background the
+next step requires:
+
+1. **Python `unittest`.** Learn `TestCase`, `assertEqual`, discovery, and
+   `subTest`.  The lab uses only the standard library so the testing mechanism
+   is visible.
+2. **pytest invocation.** tinygrad uses pytest to collect many unittest-style
+   tests.  Read pytest's official pages on
+   [invocation](https://docs.pytest.org/en/stable/how-to/usage.html) and
+   [assertions](https://docs.pytest.org/en/stable/how-to/assert.html), then be
+   able to select one exact node.
+3. **Numerical comparison.** Read NumPy's `assert_allclose` page when the
+   contract is not exactly representable.
+4. **Property testing.** Learn Hypothesis strategies, invariants, shrinking,
+   and deterministic reproduction only when the bug describes a family that a
+   small table cannot express well.  The bounded route is linked from
+   [Learning resources](../reference/learning-resources.md#testing-transformations).
+5. **Compiler/runtime-specific validation.** Return to Chapters 5–14 for the
+   artifact whose legality or behavior the test will assert.  Do not copy an IR
+   assertion whose meaning you cannot explain.
+
+The goal is not to finish a generic software-testing curriculum before making
+progress.  It is to notice the exact missing concept, study it, and return with
+enough understanding to state what the next assertion proves.
+
+## Lab 0 — red, then green, with one unchanged contract
+
+Run the lab from the **documentation repository root**, not from `~`.  Replace
+the checkout and interpreter paths if yours differ:
+
+```bash
+cd ~/Documents/projects/tinygrad_docs
+
+PYTHONPATH=../tinygrad-study DEV=PYTHON \
+  ../tinygrad-study/.venv/bin/python \
+  labs/phase5/testing_walk.py --mode red
+
+PYTHONPATH=../tinygrad-study DEV=PYTHON \
+  ../tinygrad-study/.venv/bin/python \
+  labs/phase5/testing_walk.py --mode green
+```
+
+The red demonstration should still exit successfully.  That is deliberate:
+the script requires the expected four owning test methods, exactly 22
+`AssertionError` failure records from their parameterized/subtest cases, and
+zero unittest error records.  An import error, unexpected exception, different
+failure set or count, or mutant that passes makes the script itself fail.
+
+Both modes require the literal caller setting `DEV=PYTHON` before importing
+tinygrad; an omitted route or `DEV=PYTHON:PYTHON` is rejected rather than
+canonicalized.  The script also pins the optimizer, cache, validation,
+visualization, dtype, broadcast, local-memory, and rewrite-tracking settings
+printed in its `controlled env` line.  In particular,
+`DISALLOW_BROADCAST=0` keeps the deliberate scalar broadcast legal, while
+`TRACK_MATCH_STATS=0` prevents an inherited setting from writing a rewrite
+capture despite `VIZ=0`.
+
+Interpret the first mode line by line:
+
+```text
+candidate: known-bad row-sum mutant
+tests run: 5
+assertion failures/errors: 22 0
+weak symmetric example passed: True
+failed contract tests: ['test_10_focused_rectangular_counterexample', 'test_20_output_shape_contract', 'test_30_bounded_differential_grid', 'test_40_add_constant_metamorphic_relation']
+red reason: transpose was omitted before the reduction
+```
+
+This establishes that the five-test contract is not merely always green.  The
+weak symmetric example survives the mutation; four deliberately selected
+checks kill it for explainable reasons.
+
+The green mode passes the same contract to `tinygrad_candidate`.  It also
+prints the frontend shape and operation names as **localization observations**.
+Those names confirm that this recorded expression contains `PERMUTE` and
+`REDUCE` before realization.  They are not part of the reusable semantic
+contract: a future legal canonicalization could change the frontend artifact
+while preserving the required values and shape.
+
+The final two lines delimit the evidence:
+
+```text
+claim: semantic contract passed on the portable Python route
+non-claim: no compiled renderer, driver, GPU, timing, or full CI matrix was tested
+```
+
+Write that distinction in your lab notes.  A portable green test is a real
+result; inflating it into a hardware or integration claim makes it less useful.
 
 ## Testing is a risk argument
 
@@ -136,6 +473,160 @@ Environment-backed `ContextVar` values are generally created during import.
 Set global test modes before Python starts; use `Context(...)` inside a test
 only for the deliberately scoped variant.
 
+## Expand one counterexample into a claimed domain
+
+The focused counterexample explains the bug.  It is not automatically the
+whole domain of the fix.  Before adding cases, write the dimensions over which
+the changed contract might vary:
+
+| Dimension | Questions for a Tensor/compiler change |
+| --- | --- |
+| Shape | Scalar, empty, singleton, square, rectangular, broadcast, symbolic, or very large? |
+| Dtype | Boolean, signed/unsigned integer, float widths, bfloat, image, vector, pointer? |
+| Values | Zero, one, negative, extrema, overflow boundary, NaN, Inf, repeated, random? |
+| Layout/view | Contiguous, permuted, expanded stride-zero, shrunk, padded, offset, non-contiguous? |
+| Graph context | Alone, fused with another op, consumed twice, aliased, reduced, differentiated? |
+| Compiler mode | `NOOPT`, ordinary optimization, tensor cores, `SPEC`, symbolic variables? |
+| Execution mode | Lazy, realized, JIT ignore/capture/replay, graph replay, process replay? |
+| Target | NULL analysis, Python interpreter, compiled CPU, renderer target, physical device? |
+
+Do not mechanically form the Cartesian product.  A matrix of 8 shapes × 12
+dtypes × 6 layouts × 5 backends can become expensive while still missing the
+one relationship that matters.  Use the defect mechanism to select cases.
+
+For an omitted permutation, non-square and non-symmetric data are high-value
+because they distinguish coordinate maps.  For an integer rewrite such as
+`x % c`, negative values and divisibility boundaries may matter.  For a masked
+load, the first invalid index, an all-false gate, and an offset view matter more
+than another random contiguous tensor.  For an allocator lifetime defect,
+reuse after asynchronous submission matters; ten synchronous arithmetic
+shapes do not add that detector.
+
+Classify each selected case:
+
+- a **positive case** reaches the rule and should transform or execute;
+- a **negative case** looks similar but must not take the rule;
+- an **edge case** sits at a domain boundary such as zero, one, maximum width,
+  empty range, or last legal offset;
+- an **interaction case** combines the changed behavior with aliasing,
+  fusion, symbolic binding, JIT, or another stage; and
+- a **portability case** takes the same contract through an implementation
+  route that differs at the suspected layer.
+
+Negative cases are particularly important for compiler rewrites.  A rewrite
+can be correct wherever it fires and still be wrong because it fires too
+widely.  If a rule requires “constant divisor is positive,” test a zero,
+negative, and non-constant divisor that remain unchanged.  If it requires a
+specific dtype, test the nearest dtype whose semantics differ.  The assertions
+should state the semantic or structural reason the rule is inapplicable, not
+merely that the graph happens to retain an old `repr`.
+
+### Keep the small case even after finding a family
+
+Suppose a Hypothesis run or deterministic grid finds 73 failing shapes.  Keep
+the smallest intelligible counterexample.  It provides:
+
+- a stable red/green reproducer;
+- a value a reviewer can calculate;
+- a fast case for debugging under verbose modes; and
+- a durable record if a property strategy changes later.
+
+Then retain the bounded family test only if it protects a meaningful general
+invariant at acceptable cost.  The example and family have different jobs;
+neither makes the other redundant.
+
+## Understand what the test runner did
+
+When pytest reports a failure, several earlier stages have already succeeded:
+
+```text
+start Python process
+  → import pytest/plugins and test modules
+  → collect tests and construct node IDs
+  → evaluate skips/fixtures/setup
+  → call the selected test body
+  → execute the code under test
+  → evaluate assertions
+  → teardown and summarize
+```
+
+A command such as:
+
+```bash
+python -m pytest test/backend/test_ops.py::TestOps::test_add -x -q
+```
+
+selects a **node ID**: file, class, and test method.  Collection must find that
+exact node before its body can run.  `-x` stops after the first failure; `-q`
+reduces reporting noise.  Neither changes what the test means.
+
+Classify the observed outcome before attributing it to the patch:
+
+| Outcome | What it establishes | What to do next |
+| --- | --- | --- |
+| Collection error or “not found” | The intended test never ran. | Check checkout, spelling, imports, plugins, and current node ID. |
+| Import/setup/fixture error | The body usually never reached its assertion. | Fix or report environment/setup separately from the product behavior. |
+| Focused assertion mismatch | The observed contract differed, if the trigger reached the intended path. | Inspect actual/expected values and adjacent artifacts. |
+| Unexpected Python exception | A path failed, but not necessarily for the hypothesized reason. | Localize the exception; do not count any exception as the desired red state. |
+| Native crash, device loss, or hang | Process/runtime safety failed. | Preserve logs and minimize safely; use timeouts and bounded recovery procedures. |
+| Skip | No claim was tested on this route. | Verify the capability is genuinely unsupported and the reason is visible. |
+| Expected failure (`xfail`) | A known failure was observed under declared policy. | Ensure an unexpected pass is handled and do not use it to conceal a new regression. |
+| Intermittent pass/failure | At least one uncontrolled variable remains. | Record seed/order/device/process state and reduce before weakening the assertion. |
+
+This is why “the old test failed” is incomplete.  A missing CUDA library and an
+incorrect CUDA launch can both make a command nonzero, but only one is evidence
+for a launch regression.  Capture the relevant assertion or first bad artifact,
+not only the exit code.
+
+### Skips describe capability, not convenience
+
+A skip is appropriate when the test's contract cannot exist on a route—for
+example, a target deliberately lacks a dtype or a physical device is absent.
+Make the predicate narrow and the reason explicit.  Do not catch `Exception`
+and call the test skipped: that can turn import bugs, compiler regressions,
+driver errors, and assertion failures into apparent success.
+
+Likewise, an `xfail` records known broken behavior; it is not a substitute for
+fixing or scoping a new contribution.  Check whether strict unexpected-pass
+behavior is configured.  A test that begins passing should prompt removal or
+reassessment of the expected-failure marker.
+
+## Process state, imports, and deterministic reproduction
+
+Many tinygrad configuration values are environment-backed `ContextVar`s created
+when modules import.  The device registry, compiled-program caches, method
+caches, UOp interning, JIT state, allocator caches, and driver contexts can also
+survive for the life of a process.  A test that changes `os.environ["DEV"]`
+after importing tinygrad has not necessarily selected a fresh backend.
+
+For global modes, prefer a fresh process:
+
+```bash
+DEV=PYTHON JIT=0 SPEC=2 CACHEDB=/tmp/focused-python.db \
+  .venv/bin/python -m pytest path/to/test.py::TestClass::test_case -x -q
+
+DEV=CPU JIT=0 SPEC=2 CACHEDB=/tmp/focused-cpu.db \
+  .venv/bin/python -m pytest path/to/test.py::TestClass::test_case -x -q
+```
+
+Use distinct cache paths when the experiment is about compilation or process
+replay.  A cache hit is not inherently wrong, but it can prevent the code you
+thought you were testing from running.  State whether caches are deliberately
+warm or cold.
+
+Inside one test, `Context(FLAG=value)` is useful for a genuinely scoped
+configuration whose code reads the context at call time.  It cannot undo
+import-time class construction, reopen a device, or erase arbitrary module
+state.  When unsure, inspect where the variable is read and isolate the modes
+in subprocesses.
+
+Control random seeds, shape generators, worker count, and test order while
+minimizing.  If the bug depends on concurrency, do not remove concurrency and
+declare it solved; instead bound the schedule, repeat count, timeout, and
+resource use so the failure remains safe and reportable.  A deterministic
+single-process reproducer is ideal, but the retained test must preserve the
+actual condition that triggered the defect.
+
 ## Structural assertions: precise versus brittle
 
 Compiler tests often need structure as well as values. The question is whether
@@ -220,10 +711,15 @@ discipline, not merely their decorators.
 `SPEC` checks representation legality, not numerical equivalence.
 
 - With any nonzero `SPEC`, key schedule/codegen boundaries call `type_verify`
-  against tensor or program specs.
+  against tensor or program specs.  The schedule-side tensor check runs while
+  constructing a schedule; an in-process `SCACHE` hit reuses its cached
+  `LINEAR` and does not repeat that check.
 - At `SPEC=2`, this snapshot also checks each newly created UOp against the full
-  spec, catches inferred-dtype mismatches, and performs Python-render
-  round-tripping at boundary verification.
+  spec and performs Python-render round-tripping inside boundary
+  `type_verify`.  Its constructor-side inferred-dtype check deliberately skips
+  constants, nodes with an invalid source, cases with no inferred dtype, and
+  weak-equivalent `INDEX` access dtypes.  State those exceptions instead of
+  calling it a universal dtype proof.
 - Higher values add snapshot-specific checks and are not the ordinary CI
   contract; use the mode selected by current CI unless investigating those
   checks themselves.
@@ -258,12 +754,31 @@ inputs captured on the change branch, what generated programs change when
 replayed on the comparison revision?”
 
 At the snapshot, `do_to_program` records its arguments, relevant context values,
-location, and returned program when `CAPTURE_PROCESS_REPLAY=1`. The replay tool
-loads those rows from `CACHEDB`, regenerates programs on the comparison
-revision, and prints source diffs. Upstream documents `[pr]` as the
-refactor/speedup convention; the workflow and replay script together decide
-whether inputs are captured and differences become CI errors, so inspect both
-on current `master`.
+location, and returned program when `CAPTURE_PROCESS_REPLAY=1`. Persistence is
+not controlled by that flag alone: pinned
+[`diskcache_put`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/helpers.py#L415-L434)
+is a no-op below `CACHELEVEL=1`, so keep a stable `CACHEDB` and
+`CACHELEVEL>=1` for a useful capture.  The replay tool loads those rows,
+regenerates programs on the comparison revision, and prints source diffs.
+
+This exact snapshot also contains a case-sensitive tag mismatch that must not
+be hidden behind “inspect the files.”  The
+[README](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/external/process_replay/README.md#L1-L17)
+and [workflow](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/.github/workflows/test.yml#L1-L7)
+advertise lowercase `[pr]`; in a pull-request title that enables capture and
+the [conditional replay action](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/.github/actions/process-replay/action.yml#L1-L16).
+GitHub Actions'
+[`contains()`](https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#contains)
+is case-insensitive, so an uppercase `[PR]` title also satisfies that lowercase
+workflow expression.  The [replay implementation](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/external/process_replay/process_replay.py#L1-L8),
+however, uses Python's case-sensitive uppercase `[PR]` test when deciding
+`ASSERT_DIFF`.  Therefore lowercase `[pr]` alone captures and runs replay but
+does **not** turn a generated-source difference into an error; uppercase `[PR]`
+in the exported title both enables capture and satisfies the assertion test.
+An uppercase tag only in the exported commit message can satisfy the latter
+after a lowercase title enabled the action.  Treat this as a pinned
+observation, not a timeless convention, and re-read all three live files before
+relying on either spelling.
 
 Use it for broad rewrite, scheduling, codegen, renderer, and optimization
 changes:
@@ -324,7 +839,10 @@ At the recorded snapshot:
 - a separate `SPEC=2` job covers selected `unit`, `backend`, and `opt` tests;
 - backend jobs cover Python, CPU renderer variants, OpenCL/WebGPU, mocked
   NVIDIA/AMD routes, and Metal in different selections;
-- fuzz, model, docs, lint, and process-replay work live in separate jobs.
+- fuzz, model, docs, and lint work have dedicated jobs; process replay is not a
+  separate job.  Its conditional composite-action step appears inside many
+  unit, backend, model, and platform jobs so it can consume rows captured by
+  the tests that ran earlier in that same job.
 
 Read job environment, setup dependencies, `--ignore`/`-k` filters, mock
 interface, architecture, and per-job overrides. A test file being in
@@ -365,7 +883,7 @@ All tinygrad links are pinned to
 | [`test/opt/`](https://github.com/tinygrad/tinygrad/tree/874d33128b4e4785beea736d97df6716e0321717/test/opt), [`test/device/`](https://github.com/tinygrad/tinygrad/tree/874d33128b4e4785beea736d97df6716e0321717/test/device), and [`test/mockgpu/`](https://github.com/tinygrad/tinygrad/tree/874d33128b4e4785beea736d97df6716e0321717/test/mockgpu) | Optimization, hardware-runtime, and mock driver/device boundaries. |
 | [Shared test helpers](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/helpers.py) | Schedule, UOp, JIT, dtype, device, and timing helpers already available. |
 | [Pattern/rewrite tests](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/null/test_graph_rewrite.py) and [backend op tests](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/backend/test_ops.py) | Structural, property-based, and differential test styles. |
-| [UOp construction checks](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/uop/ops.py#L193-L221) and [`type_verify`/bounds checks](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/uop/spec.py#L8-L44) | Exactly what `SPEC=2` and `CHECK_OOB=1` validate. |
+| [UOp construction checks](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/uop/ops.py#L193-L221), [`type_verify`/bounds checks](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/uop/spec.py#L8-L44), [tensor/program/full specs](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/uop/spec.py#L131-L254), and [Python-render round trip](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/uop/spec.py#L256-L278) | Which checks and explicit exceptions compose the pinned `SPEC=2` and `CHECK_OOB=1` behavior. |
 | [Bounds-validation tests](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/null/test_validate_oob.py) | Positive, masked, symbolic, and expected-failure OOB cases. |
 | [Shape-operation fuzzer](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/external/fuzz_shape_ops.py) | Constrained Hypothesis strategies and differential invariants. |
 | [Process replay implementation](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/external/process_replay/process_replay.py) | Captured row format, context replay, source comparison, assertion, and early-stop behavior. |

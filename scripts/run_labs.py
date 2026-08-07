@@ -104,6 +104,10 @@ def main() -> int:
       run_lab(python, checkout, debugging_lab, "CPU:CLANG", cache_dir, jit=0,
               lab_args=("--mode", "fixed"))
 
+    testing_lab = ROOT / "labs/phase5/testing_walk.py"
+    run_lab(python, checkout, testing_lab, "PYTHON", cache_dir, jit=0, lab_args=("--mode", "red"))
+    run_lab(python, checkout, testing_lab, "PYTHON", cache_dir, jit=0, lab_args=("--mode", "green"))
+
     for device in args.device:
       for lab in RUNTIME_LABS: run_lab(python, checkout, lab, device, cache_dir)
       if device == "CPU" or device.startswith("CPU:CLANG"):
