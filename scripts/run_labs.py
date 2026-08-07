@@ -24,7 +24,6 @@ PORTABLE_LABS = (
 RUNTIME_LABS = (
   ROOT / "labs/phase3/inspect_program.py",
   ROOT / "labs/phase4/runtime_walk.py",
-  ROOT / "labs/phase4/jit_three_calls.py",
 )
 
 
@@ -36,6 +35,7 @@ def run_lab(python: Path, checkout: Path, lab: Path, device: str, cache_dir: Pat
     "DEV": device,
     "DEBUG": "0",
     "JIT": str(jit),
+    "NO_COLOR": "1",
     "NO_MEMORY_PLANNER": "0",
     "PYTHONOPTIMIZE": "0",
     "CACHEDB": str(cache_dir / f"{lab.stem}-{device.replace(':', '_')}-jit{jit}.db"),
@@ -67,7 +67,9 @@ def main() -> int:
     cache_dir = Path(cache_name)
     for lab in PORTABLE_LABS: run_lab(python, checkout, lab, "PYTHON", cache_dir)
     for lab in RUNTIME_LABS: run_lab(python, checkout, lab, "PYTHON", cache_dir)
-    run_lab(python, checkout, ROOT / "labs/phase4/jit_three_calls.py", "PYTHON", cache_dir, jit=0)
+    jit_walk = ROOT / "labs/phase4/jit_three_calls.py"
+    for jit in (0, 1, 2): run_lab(python, checkout, jit_walk, "PYTHON", cache_dir, jit=jit)
+    run_lab(python, checkout, ROOT / "labs/phase4/jit_contracts.py", "PYTHON", cache_dir, jit=1)
 
     # This route exercises NVIDIA-targeted lowering without claiming to test a
     # physical GPU, driver, concurrent execution, launch behavior, or performance.

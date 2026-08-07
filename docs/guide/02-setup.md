@@ -581,6 +581,14 @@ backend-class assertions only for the routes it names. On this guide's Ubuntu
 host it has also been exercised successfully on the RTX 4090 through both
 `CUDA` and `NVK+NV`; that local observation is not a portability guarantee for
 another driver or machine.
+The Phase 4 TinyJit state walk runs in three fresh `PYTHON` processes with
+`JIT=0`, `JIT=1`, and `JIT=2`; the contract lab runs once with `JIT=1`.  Both
+runner entries select the readable Python backend, and the contract lab also
+pins that route internally.  They prove capture, replay, input, return,
+mutation, and lifecycle observations without claiming a device graph or
+accelerator timing result, and they are not repeated for added hardware
+`--device` values.  Chapter 13 gives a separate, explicitly scoped way to run
+the state walk on a selected accelerator.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:
 
