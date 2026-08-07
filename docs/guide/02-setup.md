@@ -554,8 +554,8 @@ python3 scripts/run_labs.py \
 ```
 
 The runner executes a controlled selection of guide labs with fresh temporary
-cache paths. The Phase 2 frontend, UOp, and rewrite labs always run on
-`PYTHON`. Runtime-oriented labs run on `PYTHON`, on a compiler-only
+cache paths. The Phase 1 trace and Phase 2 frontend, UOp, and rewrite labs
+always run on `PYTHON`. Runtime-oriented labs run on `PYTHON`, on a compiler-only
 `PYTHON::sm_89` route where applicable, and again on every added `--device`.
 Thus `--device CUDA` does not replay every lab on CUDA. The final success line
 is:

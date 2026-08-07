@@ -12,7 +12,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CORE_LABS = (
+PORTABLE_LABS = (
+  ROOT / "labs/phase1/first_trace.py",
   ROOT / "labs/phase2/frontend_autograd.py",
   ROOT / "labs/phase2/uop_walk.py",
   ROOT / "labs/phase2/rewrite_lab.py",
@@ -55,7 +56,7 @@ def main() -> int:
 
   with tempfile.TemporaryDirectory(prefix="tinygrad-guide-labs-") as cache_name:
     cache_dir = Path(cache_name)
-    for lab in CORE_LABS: run_lab(python, checkout, lab, "PYTHON", cache_dir)
+    for lab in PORTABLE_LABS: run_lab(python, checkout, lab, "PYTHON", cache_dir)
     for lab in RUNTIME_LABS: run_lab(python, checkout, lab, "PYTHON", cache_dir)
     run_lab(python, checkout, ROOT / "labs/phase4/jit_three_calls.py", "PYTHON", cache_dir, jit=0)
 
