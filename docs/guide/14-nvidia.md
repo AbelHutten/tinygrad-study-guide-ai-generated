@@ -1581,3 +1581,5 @@ always record
 tinygrad commit + DEV + backend + interface + renderer + compiler + target
 + source/binary kind + driver/device + flags + shape/dtype + sync/timing boundary
 ```
+
+[← TinyJit and graph replay](13-jit.md) · [Next: Debugging across the pipeline →](15-debugging.md)

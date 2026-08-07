@@ -1958,3 +1958,5 @@ debug:
 safe GPU rule:
   minimize → record first fault → stop repeated submission → fresh process
 ```
+
+[← NVIDIA on Ubuntu](14-nvidia.md) · [Next: Testing a contribution →](16-testing.md)

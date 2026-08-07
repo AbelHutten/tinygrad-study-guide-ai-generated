@@ -1639,3 +1639,5 @@ JIT=2  capture/replay; graph splitting skipped
 
 PYTHON structural evidence ≠ CUDA graph or asynchronous timing evidence
 ```
+
+[← Devices and runtimes](12-runtime.md) · [Next: NVIDIA on Ubuntu →](14-nvidia.md)

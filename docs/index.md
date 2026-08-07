@@ -17,10 +17,10 @@
     not manually author, edit, or technically review the generated material.
     The owner is now reading the guide and directing model-written revisions;
     this does not imply comprehensive technical review of the guide. The owner
-    also manually ran the bundled lab runner on Ubuntu with an RTX 4090,
-    selecting both `CUDA` and `NVK+NV`; all selections in that run passed. This
-    was a limited smoke test, not verification of every explanation, command,
-    exercise, device, or tinygrad revision. See
+    also manually ran the then-current bundled lab runner on Ubuntu with an RTX
+    4090, selecting both `CUDA` and `NVK+NV`; all selections in that run passed.
+    This was a limited smoke test, not verification of every explanation,
+    command, exercise, device, or tinygrad revision. See
     [Provenance and validation](reference/provenance.md) for the exact scope.
 
 This is a contribution-readiness course for tinygrad. It starts where many
@@ -56,11 +56,12 @@ It does **not** assume prior compiler construction, GPU programming, assembly,
 driver development, or detailed computer architecture knowledge. Git and
 testing workflows are covered where tinygrad's conventions matter.
 
-The bundled lab runner has been manually smoke-tested on Ubuntu and an NVIDIA
-RTX 4090 with both `CUDA` and `NVK+NV` selected. Exercises and commands outside
-that runner are not thereby verified. The core path begins with
-hardware-neutral and CPU/Python backends; sections that require NVIDIA hardware
-are marked and alternatives are provided where practical.
+The then-current bundled lab runner was manually smoke-tested on Ubuntu and an
+NVIDIA RTX 4090 with both `CUDA` and `NVK+NV` selected. Exercises and commands
+outside that historical runner selection are not thereby verified. The core
+path begins with hardware-neutral and CPU/Python backends; sections that
+require NVIDIA hardware are marked and alternatives are provided where
+practical.
 
 ## How the path works
 

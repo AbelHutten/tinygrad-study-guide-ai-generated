@@ -1046,3 +1046,5 @@ external fuzz/replay/model/benchmark/specialized runs
 Keep [Command quick reference](../reference/commands.md) beside the test run and
 return to [Learning resources](../reference/learning-resources.md) only when a
 specific testing or hardware prerequisite blocks the next checkpoint.
+
+[← Debugging across the pipeline](15-debugging.md) · [Next: Performance engineering →](17-performance.md)

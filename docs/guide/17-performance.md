@@ -1228,3 +1228,5 @@ occupancy: resource/latency-hiding constraint, not a performance goal
 model -> timeline -> execution plan -> owning call/gap -> isolate
       -> change first wrong/costly layer -> full-model validation
 ```
+
+[← Testing a contribution](16-testing.md) · [Next: From idea or bounty to a reviewable contribution →](18-contributing.md)

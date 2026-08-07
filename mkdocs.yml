@@ -59,7 +59,7 @@ nav:
       - "15. Debugging across the pipeline": guide/15-debugging.md
       - "16. Testing a contribution": guide/16-testing.md
       - "17. Performance engineering": guide/17-performance.md
-      - "18. From idea or bounty to PR": guide/18-contributing.md
+      - "18. From idea or bounty to a reviewable contribution": guide/18-contributing.md
   - Reference:
       - Architecture map: reference/architecture-map.md
       - Command quick reference: reference/commands.md

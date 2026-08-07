@@ -2409,3 +2409,5 @@ RELATIONSHIP
   this guide is independent, unofficial, and not endorsed
   guide problems belong here, not in tinygrad's tracker
 ```
+
+[← Performance engineering](17-performance.md) · [Use the contribution brief →](../reference/contribution-brief.md)

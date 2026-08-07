@@ -18,10 +18,10 @@
 > not manually author, edit, or technically review the generated material. The
 > owner is now reading the guide and directing model-written revisions; this
 > does not imply comprehensive technical review of the guide. The owner also
-> manually ran the bundled lab runner on Ubuntu with an RTX 4090, selecting both
-> `CUDA` and `NVK+NV`; all selections in that run passed. This was a limited
-> smoke test, not verification of every explanation, command, exercise, device,
-> or tinygrad revision. See
+> manually ran the then-current bundled lab runner on Ubuntu with an RTX 4090,
+> selecting both `CUDA` and `NVK+NV`; all selections in that run passed. This
+> was a limited smoke test, not verification of every explanation, command,
+> exercise, device, or tinygrad revision. See
 > [Provenance and validation](docs/reference/provenance.md) for the exact scope.
 >
 > This generated artifact is published so others can use it without spending
@@ -31,15 +31,19 @@ An unofficial, contribution-oriented path through tinygrad for readers who are
 already comfortable with Python and machine learning, but are new to compilers
 and GPU programming.
 
-The guide is designed to be read from front to back. It combines concise
-background explanations, deliberate source-reading, and hands-on exercises.
-When a topic is too large to teach responsibly in place, the guide names the
-missing prerequisite and links to a focused external resource.
+The guide is designed to be read from front to back. It develops compiler and
+GPU ideas step by step from the reader's Python and ML background, then uses
+bounded, question-led source stops and executable exercises. When a topic is
+too large to teach responsibly in place, the guide names the missing
+prerequisite, links a focused resource, and gives a return exercise.
 
 The research baseline is tinygrad commit
 [`874d331`](https://github.com/tinygrad/tinygrad/commit/874d33128b4e4785beea736d97df6716e0321717).
 Concepts are written to remain useful across revisions; exact paths and symbols
 are explicitly treated as snapshot-sensitive.
+
+Read the rendered guide at
+[abelhutten.github.io/tinygrad-study-guide-ai-generated](https://abelhutten.github.io/tinygrad-study-guide-ai-generated/).
 
 ## Read locally
 
@@ -63,7 +67,9 @@ portable labs with:
 
 ```bash
 python3 scripts/check_docs.py --tinygrad ../tinygrad-study
-python3 scripts/run_labs.py --tinygrad ../tinygrad-study
+python3 scripts/run_labs.py \
+  --tinygrad ../tinygrad-study \
+  --python ../tinygrad-study/.venv/bin/python
 ```
 
 ## License

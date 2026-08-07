@@ -1693,3 +1693,5 @@ accounting
   mem_used = logical active base-Buffer bytes
   allocator LRU/driver physical retention is separate
 ```
+
+[← Rendering and compilation](11-rendering.md) · [Next: TinyJit and graph replay →](13-jit.md)
