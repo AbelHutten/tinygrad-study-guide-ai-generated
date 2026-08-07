@@ -6,17 +6,21 @@ return to tinygrad while the connection is fresh.
 
 ## tinygrad sources and references
 
-These are the highest-value companions to the guide:
+These are the highest-value companions to the guide.  **Pinned** resources
+below resolve to tinygrad commit `874d331`; they support this guide's exact
+source tours but must be rechecked against live `master` before contribution
+work.  The official documentation row is intentionally live rather than
+pinned.
 
 | Resource | Use it for | Caution |
 | --- | --- | --- |
 | [Official documentation](https://docs.tinygrad.org/) | Current Tensor/API signatures, dtypes, environment variables, runtime inventory, and short developer summaries | Developer pages are compressed references, not a beginner curriculum. |
-| [Source tree at this guide's snapshot](https://github.com/tinygrad/tinygrad/tree/874d33128b4e4785beea736d97df6716e0321717) | Reproducing exact source tours and lab behavior | Return to live `master` before developing a contribution. |
-| [`spec/tinyspec.pdf`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/spec/tinyspec.pdf) | Formal inventory of the UOp dialect, derived properties, common compositions, optimization vocabulary, sharding, and lowering | Dense and reference-oriented. Read after the UOp chapter, not before it. |
-| [`docs/abstractions3.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/docs/abstractions3.py) | A compact front-to-back training example that reaches `schedule_linear` and `run_linear` | Read it line by line only after tracing the smaller expression in this guide. |
-| [`docs/abstractions4.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/docs/abstractions4.py) | Advanced custom UOp, BEAM, HIP, and assembly kernels | AMD/RDNA3-specific in important sections; it is not a generic next step. |
-| [`tinygrad/viz/README.md`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/viz/README.md) | Current rewrite-trace and profiling CLI commands | Match the README to your checkout because output and flags evolve. |
-| [`test/external/process_replay/README.md`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/external/process_replay/README.md) | Comparing generated kernels across a refactor or optimization | It complements focused correctness tests; it does not replace them. |
+| **Pinned:** [source tree at this guide's snapshot](https://github.com/tinygrad/tinygrad/tree/874d33128b4e4785beea736d97df6716e0321717) | Reproducing exact source tours and lab behavior | Return to live `master` before developing a contribution. |
+| **Pinned:** [`spec/tinyspec.pdf`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/spec/tinyspec.pdf) | Formal inventory of the UOp dialect, derived properties, common compositions, optimization vocabulary, sharding, and lowering | Dense and reference-oriented. Read after the UOp chapter, not before it. |
+| **Pinned:** [`docs/abstractions3.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/docs/abstractions3.py) | A compact front-to-back training example that reaches `schedule_linear` and `run_linear` | Read it line by line only after tracing the smaller expression in this guide. |
+| **Pinned:** [`docs/abstractions4.py`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/docs/abstractions4.py) | Advanced custom UOp, BEAM, HIP, and assembly kernels | AMD/RDNA3-specific in important sections; it is not a generic next step. |
+| **Pinned:** [`tinygrad/viz/README.md`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/tinygrad/viz/README.md) | Rewrite-trace and profiling CLI commands for the recorded snapshot | Match the README to your checkout because output and flags evolve. |
+| **Pinned:** [`test/external/process_replay/README.md`](https://github.com/tinygrad/tinygrad/blob/874d33128b4e4785beea736d97df6716e0321717/test/external/process_replay/README.md) | Comparing generated kernels across a refactor or optimization | It complements focused correctness tests; it does not replace them. |
 
 ### Historical community notes
 

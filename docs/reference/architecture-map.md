@@ -30,9 +30,13 @@ PROGRAM(kernel SINK, linear UOps, SOURCE/assembly, BINARY)
 allocator + loaded program + device launch
 ```
 
-The arrows are the important part. When debugging, ask which arrow first turns
-a correct representation into an incorrect one. When optimizing, ask which
-arrow controls the cost you measured.
+The arrows are the important part.  For a correctness failure, ask which arrow
+first turns an artifact that still satisfies the required contract into one
+that violates it: that downstream artifact is the **first bad artifact**.  For
+a performance problem, ask which arrow first makes a decision or produces an
+artifact that can account for the measured cost: that is the **first costly
+artifact**.  A later exception or slow kernel may be only the place where an
+earlier mistake became visible.
 
 ## Stage-by-stage source map
 
@@ -91,15 +95,24 @@ Some work does not fit on one horizontal layer:
 - **Target capability** flows backward from the selected `Renderer`: supported
   operations, types, tensor cores, local memory, and launch limits determine
   which lowerings and optimizations are legal.
-- **Tracing and validation** wrap many transformations. `VIZ`, `DEBUG`, `SPEC`,
-  and process replay reveal different views of the same pipeline.
+- **Observation tools** such as `DEBUG` and `VIZ` expose representations,
+  rewrites, generated artifacts, or timing events.  They do not independently
+  decide whether the observed behavior is correct.
+- **Structural validation** with nonzero `SPEC` runs the relevant pinned
+  legality matcher at schedule/codegen boundaries.  `SPEC=2` additionally
+  strengthens per-UOp construction checks and boundary verification, subject
+  to the snapshot's explicit exceptions.  It is not a numerical oracle.
+- **Process replay** captures kernel-generation inputs on the change branch,
+  regenerates programs on a comparison revision, and exposes generated
+  `SOURCE` differences.  It is neither another graph viewer nor proof of
+  runtime correctness or performance.
 
 Imports therefore do not form a perfectly layered architecture. For example,
 scheduling reuses symbolic/codegen simplifiers, while codegen reuses range and
 multi-device rules. Follow data transformations and public responsibilities,
 not import direction alone.
 
-## Locate a problem by its first bad artifact
+## Locate a problem by its first bad or costly artifact
 
 | Observation | First places to compare |
 | --- | --- |
@@ -108,12 +121,30 @@ not import direction alone.
 | Correct kernel boundary but wrong index | Movement lowering, symbolic simplification, range/index graph |
 | Kernel AST is correct but generated program is wrong | Decomposition, GPU dimensions, loads/stores, control flow, renderer |
 | Program is correct but result or synchronization is wrong | Argument mapping, allocator, runtime program, queues, graph runner |
-| Correct result but model is slow | Fusion/materialization and memory plan before tuning an individual kernel |
-| One kernel is slow | Applied opts, memory access, vectorization, occupancy, tensor-core use, renderer output |
+| Cold result is slow before useful execution | Tensor construction, scheduling, rewrites/search, rendering, compiler/cache state, initialization |
+| Correct steady model is slow or has the wrong call sequence | Host/device timeline, `LINEAR`, fusion/materialization, recomputation, copies, dependency schedule, memory plan |
+| One stable critical-path kernel is slow | Kernel AST, applied opts, memory access, vectorization, occupancy, tensor-core use, renderer output |
+| Prepared kernels are fast but warm wall time is slow | JIT/graph grouping, host submission, queues, copies, waits, synchronization, device critical path |
 | First call works but JIT replay fails | Input parameterization, capture exclusions, symbolic values, graph runner |
 
 The table gives a starting hypothesis, not a verdict. Reduce the case and
 inspect the artifact on both sides of the suspected transformation.
+
+For performance, preserve the four-layer distinction while narrowing:
+
+```text
+full cold and steady workload
+  -> compile/Python: construction, schedule, rewrite/search, render, compile
+  -> model/scheduler: realization boundaries, fusion, copies, call sequence
+  -> kernel/codegen: one scheduled call's lowered program and device cost
+  -> execution/submission: launch, queue, graph, wait, and synchronization cost
+  -> return to the same full-workload metric
+```
+
+This is an attribution funnel, not a claim that the clocks are always additive.
+Host work, copies, and device execution can overlap.  Compare completed wall
+time with the device timeline, inspect the execution plan before isolating one
+kernel, and return upward after changing the first owning layer.
 
 ## NVIDIA branches
 
